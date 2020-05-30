@@ -1,5 +1,5 @@
-wick = ' '
-if wick == 'gay':
-    print('aiiiii que gostoso')
-else:
-    print('sla maluko...')
+import pygame
+
+pygame.init()
+
+# Ainda não vamos alterar nada
