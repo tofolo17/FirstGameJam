@@ -1,3 +1,4 @@
 # FirstGameJam
 The name is enough
-Velho to tentando entende como isso funciona ainda kkkkkkkkkkkkkkk
+
+Ainda estou entendendo o funcionamento do Git e GitHub
