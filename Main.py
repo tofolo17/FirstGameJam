@@ -99,6 +99,7 @@ def game_loop():
 
     # Variáveis físicas
     vertical_momentum = air_timer = x_bg = 0
+    # right_speeder = left_speeder = 1
 
     # Personagem
     player_image = pg.image.load('Imagens//player.png').convert()
@@ -154,6 +155,19 @@ def game_loop():
         if vertical_momentum > 3:
             vertical_momentum = 3
 
+        '''
+        # Movimento do personagem
+        player_movement = [0, 0]
+        if moving_right:
+            player_movement[0] += 1
+        if moving_left:
+            player_movement[0] -= 1
+        player_movement[1] += vertical_momentum
+        vertical_momentum += 0.2
+        if vertical_momentum > 3:
+            vertical_momentum = 3
+        '''  # Tentativa #1 - implementando velocidade (tentar usar um timer na próxima)
+
         # Relacionando o jogador e o mapa
         player_rect, collisions = move(player_rect, player_movement, tile_rect)
 
@@ -203,4 +217,4 @@ game_loop()
 pg.quit()
 sys.exit()
 
-# Velocidade gradativa
+# Velocidade gradativa, fundo se movimentando com eprsnagem parado, resolver DeprecationWarnings
