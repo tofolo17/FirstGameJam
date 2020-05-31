@@ -14,19 +14,21 @@ pg.display.set_caption('Rocket Wave')
 display = pg.Surface((300, 200))
 clock = pg.time.Clock()
 
-# Mapa
-game_map = [['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
-            ['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
-            ['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
-            ['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
-            ['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
-            ['0', '0', '0', '0', '0', '0', '0', '2', '2', '2', '2', '2', '0', '0', '0', '0', '0', '0', '0'],
-            ['0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0'],
-            ['2', '2', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '0', '2', '2'],
-            ['1', '1', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '2', '1', '1'],
-            ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1'],
-            ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1'],
-            ['1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1', '1']]
+
+# Carregando o mapa
+def load_map(path):
+    file = open(path + '.txt', 'r')
+    data = file.read()
+    file.close()
+    data = data.split('\n')
+    game_map = []
+    for row in data:
+        game_map.append(list(row))
+    return game_map
+
+
+level_map = load_map('mapfile')
+
 grass_img = pg.image.load('Imagens//grass.png')
 dirt_img = pg.image.load('Imagens//dirt.png')
 
@@ -109,7 +111,7 @@ def game_loop():
         # Construção do mapa
         tile_rect = []
         y = 0
-        for layer in game_map:
+        for layer in level_map:
             x = 0
             for tile in layer:
                 if tile == '1':
@@ -149,10 +151,10 @@ def game_loop():
         x, y = pg.mouse.get_pos()
 
         # Movimentos em X
-        if x > win_size[0] - win_size[0] / 2.5:
+        if x > win_size[0] - win_size[0] / 2.5 and (y > win_size[1] / 6):
             moving_left = False
             moving_right = True
-        elif x < win_size[0] / 2.5:
+        elif x < win_size[0] / 2.5 and (y > win_size[1] / 6):
             moving_right = False
             moving_left = True
         else:
