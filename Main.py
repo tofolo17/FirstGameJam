@@ -110,7 +110,7 @@ def game_loop():
 
         # Câmera
         true_scroll[0] -= ((player_rect.x + true_scroll[0]) - 152)/5
-        true_scroll[1] -= ((player_rect.y + true_scroll[1]) - 100)/5
+        true_scroll[1] -= ((player_rect.y + true_scroll[1]) - 125)/5
         scroll = true_scroll.copy()
         scroll[0] = int(true_scroll[0])
         scroll[1] = int(true_scroll[1])
@@ -118,11 +118,15 @@ def game_loop():
         # Atualizando a tela
         display.fill((146, 244, 255))
 
+        # Movimento Background
         rel_x = x_bg % bg.get_rect().width
         display.blit(bg, (rel_x - bg.get_rect().width, 0))
         if rel_x < win_size[0]:
             display.blit(bg, (rel_x, 0))
-        x_bg -= 1
+        if moving_right:
+            x_bg -= 0.5
+        elif moving_left:
+            x_bg += 0.5
 
         # Construção do mapa
         tile_rect = []
