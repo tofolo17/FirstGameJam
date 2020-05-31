@@ -146,39 +146,35 @@ def game_loop():
         display.blit(player_image, (player_rect.x, player_rect.y))
 
         # Apurando eventos
+        x, y = pg.mouse.get_pos()
+
+        # Movimentos em X
+        if x > win_size[0] - win_size[0] / 2.5:
+            moving_left = False
+            moving_right = True
+        elif x < win_size[0] / 2.5:
+            moving_right = False
+            moving_left = True
+        else:
+            moving_right = False
+            moving_left = False
+
+        # Movimentos em Y
+        if (y < win_size[1] / 4) and (y > win_size[1] / 5):
+            if air_timer < 6:
+                vertical_momentum = -5
+
         for event in pg.event.get():
-            x, y = pg.mouse.get_pos()
             if event.type == pg.QUIT:
                 game_exit = True
             if event.type == pg.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    if timer == 0:
-                        timer = 0.001
-                    elif timer < 0.2:
-                        if air_timer < 6:
-                            vertical_momentum = -5
-                            timer = 0
-                    if x > win_size[0] / 2:
-                        moving_right = True
-                    if x < win_size[0] / 2:
-                        moving_left = True
-            if event.type == pg.MOUSEBUTTONUP:
-                if event.button == 1:
-                    if x > win_size[0] / 2:
-                        moving_right = False
-                    if x < win_size[0] / 2:
-                        moving_left = False
-
-        # Timer pro double click
-        if timer != 0:
-            timer += dt
-            if timer >= 0.2:
-                timer = 0
-        dt = clock.tick(60) / 1000
+                    exit()
 
         # Mostrando para o usuário e FPS
         screen.blit(pg.transform.scale(display, win_size), (0, 0))
         pg.display.update()
+        clock.tick(60)
 
 
 # game_intro()
