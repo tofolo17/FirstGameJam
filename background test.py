@@ -19,7 +19,7 @@ DS = pygame.display.set_mode(size=win_size)
 CLOCK = pygame.time.Clock()
 FPS = 120
 
-bkgd = pygame.image.load("Imagens//mountains.png").convert()
+bkgd = pygame.image.load("Imagens//test.png").convert()
 x = 0
 
 # main loop

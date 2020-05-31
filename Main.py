@@ -95,9 +95,10 @@ def game_loop():
 
     # Variáveis do loop
     game_exit = moving_left = moving_right = False
+    bg = pg.image.load("Imagens//mountains.png").convert()
 
     # Variáveis físicas
-    vertical_momentum = air_timer = timer = dt = 0
+    vertical_momentum = air_timer = x_bg = 0
 
     # Personagem
     player_image = pg.image.load('Imagens//player.png').convert()
@@ -116,6 +117,12 @@ def game_loop():
 
         # Atualizando a tela
         display.fill((146, 244, 255))
+
+        rel_x = x_bg % bg.get_rect().width
+        display.blit(bg, (rel_x - bg.get_rect().width, 0))
+        if rel_x < win_size[0]:
+            display.blit(bg, (rel_x, 0))
+        x_bg -= 1
 
         # Construção do mapa
         tile_rect = []
