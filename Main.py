@@ -14,6 +14,8 @@ pg.display.set_caption('Rocket Wave')
 display = pg.Surface((300, 200))
 clock = pg.time.Clock()
 
+true_scroll = [0, 0]
+
 
 # Carregando o mapa
 def load_map(path):
@@ -105,6 +107,13 @@ def game_loop():
     # Enquanto o jogo estiver aberto...
     while not game_exit:
 
+        # Câmera
+        true_scroll[0] -= ((player_rect.x + true_scroll[0]) - 152)/5
+        true_scroll[1] -= ((player_rect.y + true_scroll[1]) - 100)/5
+        scroll = true_scroll.copy()
+        scroll[0] = int(true_scroll[0])
+        scroll[1] = int(true_scroll[1])
+
         # Atualizando a tela
         display.fill((146, 244, 255))
 
@@ -115,9 +124,9 @@ def game_loop():
             x = 0
             for tile in layer:
                 if tile == '1':
-                    display.blit(dirt_img, (x * 16, y * 16))
+                    display.blit(dirt_img, (x * 16 + scroll[0], y * 16 + scroll[1]))
                 if tile == '2':
-                    display.blit(grass_img, (x * 16, y * 16))
+                    display.blit(grass_img, (x * 16 + scroll[0], y * 16 + scroll[1]))
                 if tile != '0':
                     tile_rect.append(pg.Rect(x * 16, y * 16, 16, 16))
                 x += 1
@@ -145,16 +154,14 @@ def game_loop():
             air_timer += 1
 
         # Põe o personagem na tela
-        display.blit(player_image, (player_rect.x, player_rect.y))
+        display.blit(player_image, (player_rect.x + scroll[0], player_rect.y + scroll[1]))
 
-        # Apurando eventos
         x, y = pg.mouse.get_pos()
-
         # Movimentos em X
-        if x > win_size[0] - win_size[0] / 2.5 and (y > win_size[1] / 6):
+        if x > win_size[0] - win_size[0] / 3 and (y > win_size[1] / 6):
             moving_left = False
             moving_right = True
-        elif x < win_size[0] / 2.5 and (y > win_size[1] / 6):
+        elif x < win_size[0] / 3 and (y > win_size[1] / 6):
             moving_right = False
             moving_left = True
         else:
@@ -162,10 +169,11 @@ def game_loop():
             moving_left = False
 
         # Movimentos em Y
-        if (y < win_size[1] / 4) and (y > win_size[1] / 5):
+        if (y < win_size[1] / 4) and (y > win_size[1] / 6):
             if air_timer < 6:
                 vertical_momentum = -5
 
+        # Apurando eventos
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 game_exit = True
@@ -183,3 +191,5 @@ def game_loop():
 game_loop()
 pg.quit()
 sys.exit()
+
+# Velocidade gradativa
