@@ -14,7 +14,9 @@ else:
 
 # Tamanho da tela e título
 info_object = pg.display.Info()
-screen = pg.display.set_mode((info_object.current_w - 5, info_object.current_h - 40))
+w = info_object.current_w - 5
+h = info_object.current_h - 40
+screen = pg.display.set_mode((w, h))
 pg.display.set_caption('Rocket Wave')
 
 # Colors
@@ -23,10 +25,18 @@ black = (0, 0, 0)
 
 
 def game_intro():
+    x = 0
     intro = True
+    bg = pg.image.load('Imagens//background.jpg').convert()
     while intro:
-        screen.fill(white)
+        rel_x = x % bg.get_rect().width
+        screen.blit(bg, (rel_x - bg.get_rect().width, 0))
+        if rel_x < w:
+            screen.blit(bg, (rel_x, 0))
+        x -= 1
         for event in pg.event.get():
+            if event.type == pg.QUIT:
+                exit()
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
                     intro = False
@@ -39,6 +49,8 @@ def game_loop():
     while not game_exit:
         screen.fill(black)
         for event in pg.event.get():
+            if event.type == pg.QUIT:
+                game_exit = True
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
                     game_exit = True
