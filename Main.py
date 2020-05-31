@@ -17,17 +17,35 @@ info_object = pg.display.Info()
 screen = pg.display.set_mode((info_object.current_w - 5, info_object.current_h - 40))
 pg.display.set_caption('Rocket Wave')
 
+# Colors
+white = (255, 255, 255)
+black = (0, 0, 0)
+
+
+def game_intro():
+    intro = True
+    while intro:
+        screen.fill(white)
+        for event in pg.event.get():
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_SPACE:
+                    intro = False
+        pg.display.update()
+
 
 # Loop principal
 def game_loop():
     game_exit = False
     while not game_exit:
+        screen.fill(black)
         for event in pg.event.get():
             if event.type == pg.KEYDOWN:
                 if event.key == pg.K_SPACE:
                     game_exit = True
+        pg.display.update()
 
 
+game_intro()
 game_loop()
 pg.quit()
 exit()
