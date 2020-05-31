@@ -53,6 +53,7 @@ def game_intro():
 '''
 
 
+# Teste de colisão
 def collision_test(rect, tiles):
     hit_list = []
     for tile in tiles:
@@ -61,6 +62,7 @@ def collision_test(rect, tiles):
     return hit_list
 
 
+# Detectando movimentos e colisões
 def move(rect, movement, tiles):
     collision_types = {'top': False, 'bottom': False, 'right': False, 'left': False}
     rect.x += movement[0]
@@ -69,7 +71,7 @@ def move(rect, movement, tiles):
         if movement[0] > 0:
             rect.right = tile.left
             collision_types['right'] = True
-        elif movement[0] < 0:
+        if movement[0] < 0:
             rect.left = tile.right
             collision_types['left'] = True
     rect.y += movement[1]
@@ -78,7 +80,7 @@ def move(rect, movement, tiles):
         if movement[1] > 0:
             rect.bottom = tile.top
             collision_types['bottom'] = True
-        elif movement[1] < 0:
+        if movement[1] < 0:
             rect.top = tile.bottom
             collision_types['top'] = True
     return rect, collision_types
@@ -91,8 +93,7 @@ def game_loop():
     game_exit = moving_left = moving_right = False
 
     # Variáveis físicas
-    vertical_momentum = 0
-    air_timer = 0
+    vertical_momentum = air_timer = timer = dt = 0
 
     # Personagem
     player_image = pg.image.load('Imagens//player.png').convert()
@@ -131,6 +132,7 @@ def game_loop():
         if vertical_momentum > 3:
             vertical_momentum = 3
 
+        # Relacionando o jogador e o mapa
         player_rect, collisions = move(player_rect, player_movement, tile_rect)
 
         # Mantém o personagem colidindo com o chão
@@ -145,26 +147,38 @@ def game_loop():
 
         # Apurando eventos
         for event in pg.event.get():
+            x, y = pg.mouse.get_pos()
             if event.type == pg.QUIT:
                 game_exit = True
-            if event.type == pg.KEYDOWN:
-                if event.key == pg.K_LEFT:
-                    moving_left = True
-                if event.key == pg.K_RIGHT:
-                    moving_right = True
-                if event.key == pg.K_UP:
-                    if air_timer < 6:  # Está relacionado ao momento vertical (se você o aumenta, o tempo no ar diminui)
-                        vertical_momentum = -5
-            if event.type == pg.KEYUP:
-                if event.key == pg.K_LEFT:
-                    moving_left = False
-                if event.key == pg.K_RIGHT:
-                    moving_right = False
+            if event.type == pg.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    if timer == 0:
+                        timer = 0.001
+                    elif timer < 0.2:
+                        if air_timer < 6:
+                            vertical_momentum = -5
+                            timer = 0
+                    if x > win_size[0] / 2:
+                        moving_right = True
+                    if x < win_size[0] / 2:
+                        moving_left = True
+            if event.type == pg.MOUSEBUTTONUP:
+                if event.button == 1:
+                    if x > win_size[0] / 2:
+                        moving_right = False
+                    if x < win_size[0] / 2:
+                        moving_left = False
+
+        # Timer pro double click
+        if timer != 0:
+            timer += dt
+            if timer >= 0.2:
+                timer = 0
+        dt = clock.tick(60) / 1000
 
         # Mostrando para o usuário e FPS
         screen.blit(pg.transform.scale(display, win_size), (0, 0))
         pg.display.update()
-        clock.tick(60)
 
 
 # game_intro()
