@@ -227,4 +227,4 @@ game_loop()
 pg.quit()
 sys.exit()
 
-# Resolver aumento de velocidade no ar
+# Resolver aumento de velocidade no ar...
