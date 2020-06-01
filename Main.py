@@ -14,6 +14,7 @@ pg.display.set_caption('Rocket Wave')
 display = pg.Surface((300, 200))
 clock = pg.time.Clock()
 
+# Variável para o seguir da câmera
 true_scroll = [0, 0]
 
 
@@ -69,7 +70,7 @@ def collision_test(rect, tiles):
 # Detectando movimentos e colisões
 def move(rect, movement, tiles):
     collision_types = {'top': False, 'bottom': False, 'right': False, 'left': False}
-    rect.x += movement[0]
+    rect.x += int(movement[0])
     hit_list = collision_test(rect, tiles)
     for tile in hit_list:
         if movement[0] > 0:
@@ -78,7 +79,7 @@ def move(rect, movement, tiles):
         if movement[0] < 0:
             rect.left = tile.right
             collision_types['left'] = True
-    rect.y += movement[1]
+    rect.y += int(movement[1])
     hit_list = collision_test(rect, tiles)
     for tile in hit_list:
         if movement[1] > 0:
@@ -103,26 +104,23 @@ def game_loop():
     # Personagem
     player_image = pg.image.load('Imagens//player.png').convert()
     player_image.set_colorkey((255, 255, 255))
-    player_rect = pg.Rect(100, 116, 5, 13)
+    player_rect = pg.Rect(110, 100, 5, 13)
 
     # Enquanto o jogo estiver aberto...
     while not game_exit:
 
         # Câmera
         true_scroll[0] -= ((player_rect.x + true_scroll[0]) - 152)/5
-        true_scroll[1] -= ((player_rect.y + true_scroll[1]) - 125)/5
+        true_scroll[1] -= ((player_rect.y + true_scroll[1]) - 120)/5
         scroll = true_scroll.copy()
         scroll[0] = int(true_scroll[0])
         scroll[1] = int(true_scroll[1])
 
-        # Atualizando a tela
-        display.fill((146, 244, 255))
-
         # Movimento Background
         rel_x = x_bg % bg.get_rect().width
-        display.blit(bg, (rel_x - bg.get_rect().width, 0))
+        display.blit(bg, (int(rel_x) - bg.get_rect().width, 0))
         if rel_x < win_size[0]:
-            display.blit(bg, (rel_x, 0))
+            display.blit(bg, (int(rel_x), 0))
         if moving_right:
             x_bg -= 0.5
         elif moving_left:
@@ -145,17 +143,15 @@ def game_loop():
 
         # Movimento do personagem
         player_movement = [0, 0]
-        if moving_right:
+        if speed_timer < 0.8:
             speed_boost = 2
+        else:
+            speed_boost = 3
+        if moving_right:
             speed_timer += dt
-            if speed_timer > 1:
-                speed_boost = 3
             player_movement[0] += speed_boost
         elif moving_left:
-            speed_boost = 2
             speed_timer += dt
-            if speed_timer > 1:
-                speed_boost = 3
             player_movement[0] -= speed_boost
         else:
             speed_timer = 0
@@ -178,7 +174,7 @@ def game_loop():
             x_bg -= 0.5
 
         # Mantém o personagem colidindo com o chão
-        if collisions['bottom'] or collisions['top']:
+        if collisions['bottom']:
             air_timer = 0
             vertical_momentum = 0
         else:
@@ -200,9 +196,12 @@ def game_loop():
             moving_left = False
 
         # Movimentos em Y
-        if (y < win_size[1] / 3) and (y > win_size[1] / 6):
-            if air_timer < 6:
+        if (y < win_size[1] / 3) and (y > win_size[1] / 6) and air_timer < 6:
+            if collisions['top']:
+                vertical_momentum = -1
+            elif collisions['bottom']:
                 vertical_momentum = -5
+                collisions['top'] = True
 
         # Apurando eventos
         for event in pg.event.get():
@@ -214,6 +213,11 @@ def game_loop():
 
         # Mostrando para o usuário e FPS
         screen.blit(pg.transform.scale(display, win_size), (0, 0))
+        pg.draw.rect(screen, (0, 0, 0), (0, int(win_size[1] / 6), int(win_size[0] / 3),
+                                         int(win_size[1] - win_size[1] / 6)), 1)
+        pg.draw.rect(screen, (0, 0, 0), (int(win_size[0]-win_size[0]/3), int(win_size[1] / 6),
+                                         int(win_size[0]/3), int(win_size[1] - win_size[1] / 6)), 1)
+        pg.draw.rect(screen, (0, 0, 0), (0, int(win_size[1]/6), win_size[0], int(win_size[1]/6)), 1)
         pg.display.update()
         dt = clock.tick(60)/1000
 
@@ -223,4 +227,4 @@ game_loop()
 pg.quit()
 sys.exit()
 
-# Resolver DeprecationWarnings
+# Resolver aumento de velocidade no ar
