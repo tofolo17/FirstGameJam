@@ -98,8 +98,7 @@ def game_loop():
     bg = pg.image.load("Imagens//mountains.png").convert()
 
     # Variáveis físicas
-    vertical_momentum = air_timer = x_bg = 0
-    # right_speeder = left_speeder = 1
+    vertical_momentum = air_timer = x_bg = speed_timer = dt = 0
 
     # Personagem
     player_image = pg.image.load('Imagens//player.png').convert()
@@ -147,29 +146,36 @@ def game_loop():
         # Movimento do personagem
         player_movement = [0, 0]
         if moving_right:
-            player_movement[0] += 2
-        if moving_left:
-            player_movement[0] -= 2
+            speed_boost = 2
+            speed_timer += dt
+            if speed_timer > 1:
+                speed_boost = 3
+            player_movement[0] += speed_boost
+        elif moving_left:
+            speed_boost = 2
+            speed_timer += dt
+            if speed_timer > 1:
+                speed_boost = 3
+            player_movement[0] -= speed_boost
+        else:
+            speed_timer = 0
         player_movement[1] += vertical_momentum
         vertical_momentum += 0.2
         if vertical_momentum > 3:
             vertical_momentum = 3
-
-        '''
-        # Movimento do personagem
-        player_movement = [0, 0]
-        if moving_right:
-            player_movement[0] += 1
-        if moving_left:
-            player_movement[0] -= 1
-        player_movement[1] += vertical_momentum
-        vertical_momentum += 0.2
-        if vertical_momentum > 3:
-            vertical_momentum = 3
-        '''  # Tentativa #1 - implementando velocidade (tentar usar um timer na próxima)
 
         # Relacionando o jogador e o mapa
         player_rect, collisions = move(player_rect, player_movement, tile_rect)
+
+        # Não deixa a tela se mexer quando colidido com a parede
+        if not collisions['right']:
+            x_bg = x_bg
+        else:
+            x_bg += 0.5
+        if not collisions['left']:
+            x_bg = x_bg
+        else:
+            x_bg -= 0.5
 
         # Mantém o personagem colidindo com o chão
         if collisions['bottom'] or collisions['top']:
@@ -194,7 +200,7 @@ def game_loop():
             moving_left = False
 
         # Movimentos em Y
-        if (y < win_size[1] / 4) and (y > win_size[1] / 6):
+        if (y < win_size[1] / 3) and (y > win_size[1] / 6):
             if air_timer < 6:
                 vertical_momentum = -5
 
@@ -209,7 +215,7 @@ def game_loop():
         # Mostrando para o usuário e FPS
         screen.blit(pg.transform.scale(display, win_size), (0, 0))
         pg.display.update()
-        clock.tick(60)
+        dt = clock.tick(60)/1000
 
 
 # game_intro()
@@ -217,4 +223,4 @@ game_loop()
 pg.quit()
 sys.exit()
 
-# Velocidade gradativa, fundo se movimentando com eprsnagem parado, resolver DeprecationWarnings
+# Resolver DeprecationWarnings
