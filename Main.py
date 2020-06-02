@@ -93,38 +93,43 @@ def move(rect, movement, tiles):
 
 # Loop principal
 def game_loop():
-
     # Variáveis do loop
     game_exit = moving_left = moving_right = False
-    bg = pg.image.load("Imagens//mountains.png").convert()
 
     # Variáveis físicas
-    vertical_momentum = air_timer = x_bg = speed_timer = dt = 0
+    vertical_momentum = air_timer = speed_timer = dt = 0
 
     # Personagem
     player_image = pg.image.load('Imagens//player.png').convert()
     player_image.set_colorkey((255, 255, 255))
-    player_rect = pg.Rect(110, 100, 5, 13)
+    player_rect = pg.Rect(100, 100, 5, 13)
+
+    # Objetos do fundo
+    background_objects = [[0.25, [120, 10, 70, 400]], [0.25, [280, 30, 40, 400]], [0.5, [30, 40, 40, 400]],
+                          [0.5, [130, 90, 100, 400]], [0.5, [300, 80, 120, 400]]]
 
     # Enquanto o jogo estiver aberto...
     while not game_exit:
 
+        display.fill((146, 244, 255))  # background color
+
         # Câmera
-        true_scroll[0] -= ((player_rect.x + true_scroll[0]) - 152)/5
-        true_scroll[1] -= ((player_rect.y + true_scroll[1]) - 120)/5
+        true_scroll[0] -= ((player_rect.x + true_scroll[0]) - 152) / 10
+        true_scroll[1] -= ((player_rect.y + true_scroll[1]) - 106) / 10
         scroll = true_scroll.copy()
         scroll[0] = int(true_scroll[0])
         scroll[1] = int(true_scroll[1])
 
-        # Movimento Background
-        rel_x = x_bg % bg.get_rect().width
-        display.blit(bg, (int(rel_x) - bg.get_rect().width, 0))
-        if rel_x < win_size[0]:
-            display.blit(bg, (int(rel_x), 0))
-        if moving_right:
-            x_bg -= 0.5
-        elif moving_left:
-            x_bg += 0.5
+        pg.draw.rect(display, (7, 80, 75), pg.Rect(0, 120, 300, 80))
+        for background_object in background_objects:
+            obj_rect = pg.Rect(int(background_object[1][0] + true_scroll[0] * background_object[0]),
+                               int(background_object[1][1] + true_scroll[1] * background_object[0]),
+                               int(background_object[1][2]),
+                               int(background_object[1][3]))
+            if background_object[0] == 0.5:
+                pg.draw.rect(display, (14, 222, 150), obj_rect)
+            else:
+                pg.draw.rect(display, (9, 91, 85), obj_rect)
 
         # Construção do mapa
         tile_rect = []
@@ -143,7 +148,7 @@ def game_loop():
 
         # Movimento do personagem
         player_movement = [0, 0]
-        if speed_timer < 0.8:
+        if speed_timer < 0.8 and vertical_momentum <= 1.2:
             speed_boost = 2
         else:
             speed_boost = 3
@@ -156,22 +161,12 @@ def game_loop():
         else:
             speed_timer = 0
         player_movement[1] += vertical_momentum
-        vertical_momentum += 0.2
-        if vertical_momentum > 3:
-            vertical_momentum = 3
+        vertical_momentum += 0.3
+        if vertical_momentum > 5:
+            vertical_momentum = 5
 
         # Relacionando o jogador e o mapa
         player_rect, collisions = move(player_rect, player_movement, tile_rect)
-
-        # Não deixa a tela se mexer quando colidido com a parede
-        if not collisions['right']:
-            x_bg = x_bg
-        else:
-            x_bg += 0.5
-        if not collisions['left']:
-            x_bg = x_bg
-        else:
-            x_bg -= 0.5
 
         # Mantém o personagem colidindo com o chão
         if collisions['bottom']:
@@ -196,11 +191,11 @@ def game_loop():
             moving_left = False
 
         # Movimentos em Y
-        if (y < win_size[1] / 3) and (y > win_size[1] / 6) and air_timer < 6:
+        if (y < win_size[1] / 3) and (y > win_size[1] / 6) and air_timer < 7:
             if collisions['top']:
                 vertical_momentum = -1
             elif collisions['bottom']:
-                vertical_momentum = -5
+                vertical_momentum = -6
                 collisions['top'] = True
 
         # Apurando eventos
@@ -215,16 +210,14 @@ def game_loop():
         screen.blit(pg.transform.scale(display, win_size), (0, 0))
         pg.draw.rect(screen, (0, 0, 0), (0, int(win_size[1] / 6), int(win_size[0] / 3),
                                          int(win_size[1] - win_size[1] / 6)), 1)
-        pg.draw.rect(screen, (0, 0, 0), (int(win_size[0]-win_size[0]/3), int(win_size[1] / 6),
-                                         int(win_size[0]/3), int(win_size[1] - win_size[1] / 6)), 1)
-        pg.draw.rect(screen, (0, 0, 0), (0, int(win_size[1]/6), win_size[0], int(win_size[1]/6)), 1)
+        pg.draw.rect(screen, (0, 0, 0), (int(win_size[0] - win_size[0] / 3), int(win_size[1] / 6),
+                                         int(win_size[0] / 3), int(win_size[1] - win_size[1] / 6)), 1)
+        pg.draw.rect(screen, (0, 0, 0), (0, int(win_size[1] / 6), win_size[0], int(win_size[1] / 6)), 1)
         pg.display.update()
-        dt = clock.tick(60)/1000
+        dt = clock.tick(60) / 1000
 
 
 # game_intro()
 game_loop()
 pg.quit()
 sys.exit()
-
-# Resolver aumento de velocidade no ar...
