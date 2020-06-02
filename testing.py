@@ -35,6 +35,28 @@ level_map = load_map('mapfile')
 grass_img = pg.image.load('Imagens//grass.png')
 dirt_img = pg.image.load('Imagens//dirt.png')
 
+'''
+def game_intro():
+    x = 0
+    intro = True
+    bg = pg.image.load('Imagens//background.jpg').convert()
+    while intro:
+        rel_x = x % bg.get_rect().width
+        screen.blit(bg, (rel_x - bg.get_rect().width, 0))
+        if rel_x < w:
+            screen.blit(bg, (rel_x, 0))
+        x -= 1
+        for event in pg.event.get():
+            if event.type == pg.QUIT:
+                pg.quit()
+                sys.exit()
+            if event.type == pg.KEYDOWN:
+                if event.key == pg.K_SPACE:
+                    intro = False
+        pg.display.update()
+        clock.tick(60)
+'''
+
 
 # Teste de colisão
 def collision_test(rect, tiles):
@@ -83,13 +105,9 @@ def game_loop():
 
     # Variáveis físicas
     vertical_momentum = air_timer = speed_timer = dt = 0
-    permitted_vm = [0, 0.3, 0.6, 0.8999999999999999, 1.2]
+    permited_vm = [0, 0.3, 0.6, 0.8999999999999999, 1.2]
 
-    # Personagem e seta
-    arrow = pg.image.load('Imagens//seta.png').convert_alpha()
-    arrow.set_alpha(40)
-    arrow.set_colorkey((255, 255, 255))
-
+    # Personagem
     player_image = pg.image.load('Imagens//player.png').convert()
     player_image.set_colorkey((255, 255, 255))
     player_rect = pg.Rect(100, 100, 5, 13)
@@ -139,7 +157,7 @@ def game_loop():
 
         # Movimento do personagem
         player_movement = [0, 0]
-        if (speed_timer > 0.8) and vertical_momentum in permitted_vm:
+        if (speed_timer > 0.8) and vertical_momentum in permited_vm:
             speed_boost = 3
         else:
             speed_boost = 2
@@ -168,15 +186,10 @@ def game_loop():
 
         # Põe o personagem na tela
         display.blit(player_image, (player_rect.x + scroll[0], player_rect.y + scroll[1]))
-        display.blit(arrow, (225, 100))
-        display.blit(pg.transform.rotate(arrow, 180), (41, 100))
-        display.blit(pg.transform.rotate(arrow, 45), (225, 35))
-        display.blit(pg.transform.rotate(arrow, 135), (41, 35))
-        display.blit(pg.transform.rotate(arrow, 90), (141, 35))
 
         x, y = pg.mouse.get_pos()
         # Movimentos em X
-        if x > (2/3 * win_size[0]) and (y > win_size[1] / 6):
+        if x > win_size[0] - win_size[0] / 3 and (y > win_size[1] / 6):
             moving_left = False
             moving_right = True
         elif x < win_size[0] / 3 and (y > win_size[1] / 6):
@@ -198,18 +211,22 @@ def game_loop():
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 game_exit = True
+            if event.type == pg.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    exit()
 
         # Mostrando para o usuário e FPS
         screen.blit(pg.transform.scale(display, win_size), (0, 0))
-        surface_and_opacity((214, 107, 0), int(win_size[0] / 3), int(5/6 * win_size[1]),
-                            0, int(win_size[1] / 6), 20)
-        surface_and_opacity((214, 107, 0), int(win_size[0] / 3), int(5/6 * win_size[1]),
-                            int(2/3 * win_size[0]), int(win_size[1] / 6), 20)
-        surface_and_opacity((214, 107, 0), win_size[0], int(win_size[1] / 6), 0, int(win_size[1] / 6), 20)
+        surface_and_opacity((214, 107, 0), int(win_size[0] / 3), int(win_size[1] - win_size[1] / 6),
+                            0, int(win_size[1] / 6), 30)
+        surface_and_opacity((214, 107, 0), int(win_size[0] / 3), int(win_size[1] - win_size[1] / 6),
+                            int(win_size[0] - win_size[0] / 3), int(win_size[1] / 6), 30)
+        surface_and_opacity((214, 107, 0), win_size[0], int(win_size[1] / 6), 0, int(win_size[1] / 6), 30)
         pg.display.update()
         dt = clock.tick(60) / 1000
 
 
+# game_intro()
 game_loop()
 pg.quit()
 sys.exit()
