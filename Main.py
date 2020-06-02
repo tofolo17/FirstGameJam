@@ -36,7 +36,7 @@ grass_img = pg.image.load('Imagens//grass.png')
 dirt_img = pg.image.load('Imagens//dirt.png')
 
 
-# Teste de colisão
+# Testa lugares colidíveis
 def collision_test(rect, tiles):
     hit_list = []
     for tile in tiles:
@@ -69,11 +69,18 @@ def move(rect, movement, tiles):
     return rect, collision_types
 
 
+# Colocando superfícies opacas na tela
 def surface_and_opacity(color, width, height, x_pos, y_pos, opacity):
     colored_surface = pg.Surface((width, height))
     pg.Surface.fill(colored_surface, color)
     colored_surface.set_alpha(opacity)
     screen.blit(colored_surface, (x_pos, y_pos))
+
+
+# Colocando imagens opacas na tela
+def blit_arrow(x_a, y_a, angle_a, opacity_a, obj):
+    obj.set_alpha(opacity_a)
+    display.blit(pg.transform.rotate(obj, angle_a), (x_a, y_a))
 
 
 # Loop principal
@@ -85,11 +92,13 @@ def game_loop():
     vertical_momentum = air_timer = speed_timer = dt = 0
     permitted_vm = [0, 0.3, 0.6, 0.8999999999999999, 1.2]
 
-    # Personagem e seta
-    arrow = pg.image.load('Imagens//seta.png').convert_alpha()
-    arrow.set_alpha(40)
-    arrow.set_colorkey((255, 255, 255))
+    # Variáveis da opacidade
+    op_r_a = op_l_a = op_u_a = op_ur_a = op_ul_a = 40
+    op_r_bg = op_l_bg = op_u_bg = op_ur_bg = op_ul_bg = 20
 
+    # Variáveis do personagem e da seta
+    arrow = pg.image.load('Imagens//seta.png').convert_alpha()
+    arrow.set_colorkey((255, 255, 255))
     player_image = pg.image.load('Imagens//player.png').convert()
     player_image.set_colorkey((255, 255, 255))
     player_rect = pg.Rect(100, 100, 5, 13)
@@ -101,7 +110,7 @@ def game_loop():
     # Enquanto o jogo estiver aberto...
     while not game_exit:
 
-        display.fill((146, 244, 255))  # background color
+        display.fill((146, 244, 255))  # Cor de fundo
 
         # Câmera
         true_scroll[0] -= ((player_rect.x + true_scroll[0]) - 152) / 10
@@ -166,46 +175,69 @@ def game_loop():
         else:
             air_timer += 1
 
-        # Põe o personagem na tela
+        # Põe o personagem e as setas na tela
         display.blit(player_image, (player_rect.x + scroll[0], player_rect.y + scroll[1]))
-        display.blit(arrow, (225, 100))
-        display.blit(pg.transform.rotate(arrow, 180), (41, 100))
-        display.blit(pg.transform.rotate(arrow, 45), (225, 35))
-        display.blit(pg.transform.rotate(arrow, 135), (41, 35))
-        display.blit(pg.transform.rotate(arrow, 90), (141, 35))
+        blit_arrow(41, 100, 180, op_l_a, arrow)
+        blit_arrow(225, 35, 45, op_ur_a, arrow)
+        blit_arrow(41, 35, 135, op_ul_a, arrow)
+        blit_arrow(141, 35, 90, op_u_a, arrow)
+        blit_arrow(225, 100, 0, op_r_a, arrow)
 
         x, y = pg.mouse.get_pos()
         # Movimentos em X
-        if x > (2/3 * win_size[0]) and (y > win_size[1] / 6):
+        if x > (2 / 3 * win_size[0]) and (y > win_size[1] / 6):
             moving_left = False
             moving_right = True
+            op_r_a = 70
+            op_r_bg = 50
         elif x < win_size[0] / 3 and (y > win_size[1] / 6):
             moving_right = False
             moving_left = True
+            op_l_a = 70
+            op_l_bg = 50
         else:
-            moving_right = False
-            moving_left = False
+            moving_right = moving_left = False
+            op_r_a = op_l_a = op_u_a = op_ur_a = op_ul_a = 40
+            op_r_bg = op_l_bg = op_u_bg = op_ur_bg = op_ul_bg = 20
 
         # Movimentos em Y
-        if (y < win_size[1] / 3) and (y > win_size[1] / 6) and air_timer < 7:
+        if (y < win_size[1] / 3) and (y > win_size[1] / 6) and air_timer < 10:
+            op_u_a = 70
+            op_u_bg = 50
             if collisions['top']:
                 vertical_momentum = -1
             elif collisions['bottom']:
                 vertical_momentum = -6
                 collisions['top'] = True
+        elif collisions['bottom']:
+            op_u_a = op_ul_a = op_ur_a = 40
+            op_u_bg = op_ul_bg = op_ur_bg = 20
+
+        # Analisando opacidade das setas horizontais
+        if op_u_a == 70 and op_r_a == 70:
+            op_ur_bg = op_ur_a = 50
+        elif op_u_a == 70 and op_l_a == 70:
+            op_ul_bg = op_ul_a = 50
+        else:
+            op_ul_bg = op_ul_a = 20
 
         # Apurando eventos
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 game_exit = True
 
-        # Mostrando para o usuário e FPS
+        # Update da tela, superfícies de movimento e FPS
         screen.blit(pg.transform.scale(display, win_size), (0, 0))
-        surface_and_opacity((214, 107, 0), int(win_size[0] / 3), int(5/6 * win_size[1]),
-                            0, int(win_size[1] / 6), 20)
-        surface_and_opacity((214, 107, 0), int(win_size[0] / 3), int(5/6 * win_size[1]),
-                            int(2/3 * win_size[0]), int(win_size[1] / 6), 20)
-        surface_and_opacity((214, 107, 0), win_size[0], int(win_size[1] / 6), 0, int(win_size[1] / 6), 20)
+        surface_and_opacity((214, 107, 0), int(win_size[0] / 3), int(4 / 6 * win_size[1]),
+                            0, int(win_size[1] / 3), op_l_bg)
+        surface_and_opacity((214, 107, 0), int(win_size[0] / 3), int(4 / 6 * win_size[1]),
+                            int(2 / 3 * win_size[0]), int(win_size[1] / 3), op_r_bg)
+        surface_and_opacity((214, 107, 0), int(win_size[0] / 3 + 1), int(win_size[1] / 6),
+                            int(win_size[0] / 3), int(win_size[1] / 6), op_u_bg)
+        surface_and_opacity((214, 107, 0), int(win_size[0] / 3), int(win_size[1] / 6),
+                            0, int(win_size[1] / 6), op_ul_bg)
+        surface_and_opacity((214, 107, 0), int(win_size[0] / 3), int(win_size[1] / 6),
+                            int(2 * win_size[0] / 3), int(win_size[1] / 6), op_ur_bg)
         pg.display.update()
         dt = clock.tick(60) / 1000
 
