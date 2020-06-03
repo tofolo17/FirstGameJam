@@ -12,6 +12,3 @@ for line in lista:
     lines += 1
 
 print(lista)
-
-print(tile)
-print(tile_rect.index(tile))

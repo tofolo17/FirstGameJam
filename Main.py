@@ -96,6 +96,8 @@ def game_loop():
     op_r_a = op_l_a = op_u_a = op_ur_a = op_ul_a = 40
     op_r_bg = op_l_bg = op_u_bg = op_ur_bg = op_ul_bg = 20
 
+    touched_list = []  # Últimos blocks tocados
+
     # Variáveis do personagem e da seta
     arrow = pg.image.load('Imagens//seta.png').convert_alpha()
     arrow.set_colorkey((255, 255, 255))
@@ -139,8 +141,6 @@ def game_loop():
             for tile in layer:
                 if tile == '1':
                     display.blit(dirt_img, (x * 16 + scroll[0], y * 16 + scroll[1]))
-                if tile == '2':
-                    display.blit(grass_img, (x * 16 + scroll[0], y * 16 + scroll[1]))
                 if tile != '0':
                     tile_rect.append(pg.Rect(x * 16, y * 16, 16, 16))
                 x += 1
@@ -167,6 +167,19 @@ def game_loop():
 
         # Relacionando o jogador e o mapa
         player_rect, collisions = move(player_rect, player_movement, tile_rect)
+
+        # Trocando o bloco de onde colidir
+        for tile in tile_rect:
+            if tile.top == player_rect.bottom:
+                for i in range(1, 16):
+                    if tile.x + i == player_rect.x:
+                        touched_list.append([tile.x, tile.y])
+            for xy in touched_list:
+                display.blit(grass_img, (xy[0] + true_scroll[0], xy[1] + true_scroll[1]))
+                if len(touched_list) > 1:
+                    touched_list.remove(touched_list[0])
+            else:
+                touched_list.clear()
 
         # Mantém o personagem colidindo com o chão
         if collisions['bottom']:
@@ -201,7 +214,7 @@ def game_loop():
             op_r_bg = op_l_bg = op_u_bg = op_ur_bg = op_ul_bg = 20
 
         # Movimentos em Y
-        if (y < win_size[1] / 3) and (y > win_size[1] / 6) and air_timer < 10:
+        if (y < win_size[1] / 3) and (y > win_size[1] / 6) and air_timer < 8:
             op_u_a = 70
             op_u_bg = 50
             if collisions['top']:
@@ -222,7 +235,7 @@ def game_loop():
             op_ul_bg = op_ul_a = 20
 
         # Morte do personagem
-        if air_timer > 70:
+        if air_timer > 80:
             game_exit = True
 
         # Apurando eventos
