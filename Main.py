@@ -70,11 +70,14 @@ def move(rect, movement, tiles):
 
 
 # Colocando superfícies opacas na tela
-def surface_and_opacity(color, width, height, x_pos, y_pos, opacity):
+def surface_and_opacity(color, width, height, x_pos, y_pos, opacity, h=0):
     colored_surface = pg.Surface((width, height))
     pg.Surface.fill(colored_surface, color)
     colored_surface.set_alpha(opacity)
-    screen.blit(colored_surface, (x_pos, y_pos))
+    if h:
+        display.blit(colored_surface, (x_pos, y_pos))
+    else:
+        screen.blit(colored_surface, (x_pos, y_pos))
 
 
 # Colocando imagens opacas na tela
@@ -105,7 +108,9 @@ def game_loop():
     player_image.set_colorkey((255, 255, 255))
     player_rect = pg.Rect(100, 100, 5, 13)
 
-    # Objetos do fundo
+    # Objetos do fundo e 'brilho"
+    background_objects_opacity = [[0.25, [118, 8, 74, 400]], [0.25, [280, 30, 40, 400]], [0.5, [30, 40, 40, 400]],
+                                  [0.5, [130, 90, 100, 400]], [0.5, [300, 80, 120, 400]]]
     background_objects = [[0.25, [120, 10, 70, 400]], [0.25, [280, 30, 40, 400]], [0.5, [30, 40, 40, 400]],
                           [0.5, [130, 90, 100, 400]], [0.5, [300, 80, 120, 400]]]
 
@@ -123,6 +128,13 @@ def game_loop():
 
         # Construção do fundo
         pg.draw.rect(display, (7, 80, 75), pg.Rect(0, 120, 300, 80))
+        for background_object_opacity in background_objects_opacity:
+            surface_and_opacity(
+                (0, 222, 0),
+                int(background_object_opacity[1][2]),
+                int(background_object_opacity[1][3]),
+                int(background_object_opacity[1][0] + true_scroll[0] * background_object_opacity[0]),
+                int(background_object_opacity[1][1] + true_scroll[1] * background_object_opacity[0]), 50, True)
         for background_object in background_objects:
             obj_rect = pg.Rect(int(background_object[1][0] + true_scroll[0] * background_object[0]),
                                int(background_object[1][1] + true_scroll[1] * background_object[0]),
