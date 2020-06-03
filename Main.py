@@ -14,8 +14,7 @@ pg.display.set_caption('Rocket Wave')
 display = pg.Surface((300, 200))
 clock = pg.time.Clock()
 
-# Variável para o seguir da câmera
-true_scroll = [0, 0]
+true_scroll = [0, 0]  # Variável para o seguir da câmera
 
 
 # Carregando o mapa
@@ -30,8 +29,8 @@ def load_map(path):
     return game_map
 
 
+# Variáveis do mapa
 level_map = load_map('mapfile')
-
 grass_img = pg.image.load('Imagens//grass.png')
 dirt_img = pg.image.load('Imagens//dirt.png')
 
@@ -80,6 +79,19 @@ def surface_and_opacity(color, width, height, x_pos, y_pos, opacity, h=0):
         screen.blit(colored_surface, (x_pos, y_pos))
 
 
+# Adicionando peças do efeito Parallax
+def bg_objects(color1, color2, obj_to_display, opacity):
+    for element in obj_to_display:
+        if element[0] == 0.5:
+            surface_and_opacity(
+                color1, int(element[1][2]), int(element[1][3]), int(element[1][0] + true_scroll[0] * element[0]),
+                int(element[1][1] + true_scroll[1] * element[0]), opacity, True)
+        else:
+            surface_and_opacity(
+                color2, int(element[1][2]), int(element[1][3]), int(element[1][0] + true_scroll[0] * element[0]),
+                int(element[1][1] + true_scroll[1] * element[0]), opacity, True)
+
+
 # Colocando imagens opacas na tela
 def blit_arrow(x_a, y_a, angle_a, opacity_a, obj):
     obj.set_alpha(opacity_a)
@@ -109,10 +121,12 @@ def game_loop():
     player_rect = pg.Rect(100, 100, 5, 13)
 
     # Objetos do fundo e 'brilho"
-    background_objects_opacity = [[0.25, [118, 8, 74, 400]], [0.25, [280, 30, 40, 400]], [0.5, [30, 40, 40, 400]],
-                                  [0.5, [130, 90, 100, 400]], [0.5, [300, 80, 120, 400]]]
+    background_objects_opacity = []
     background_objects = [[0.25, [120, 10, 70, 400]], [0.25, [280, 30, 40, 400]], [0.5, [30, 40, 40, 400]],
                           [0.5, [130, 90, 100, 400]], [0.5, [300, 80, 120, 400]]]
+    for values in background_objects:
+        background_objects_opacity.append([values[0], [values[1][0] - 2, values[1][1] - 2,
+                                                       values[1][2] + 5, values[1][3]]])
 
     # Enquanto o jogo estiver aberto...
     while not game_exit:
@@ -120,30 +134,16 @@ def game_loop():
         display.fill((146, 244, 255))  # Cor de fundo
 
         # Câmera
-        true_scroll[0] -= ((player_rect.x + true_scroll[0]) - 152) / 10
-        true_scroll[1] -= ((player_rect.y + true_scroll[1]) - 106) / 10
+        true_scroll[0] -= ((player_rect.x + true_scroll[0]) - 152) / 12
+        true_scroll[1] -= ((player_rect.y + true_scroll[1]) - 130) / 12
         scroll = true_scroll.copy()
         scroll[0] = int(true_scroll[0])
         scroll[1] = int(true_scroll[1])
 
         # Construção do fundo
         pg.draw.rect(display, (7, 80, 75), pg.Rect(0, 120, 300, 80))
-        for background_object_opacity in background_objects_opacity:
-            surface_and_opacity(
-                (0, 222, 0),
-                int(background_object_opacity[1][2]),
-                int(background_object_opacity[1][3]),
-                int(background_object_opacity[1][0] + true_scroll[0] * background_object_opacity[0]),
-                int(background_object_opacity[1][1] + true_scroll[1] * background_object_opacity[0]), 50, True)
-        for background_object in background_objects:
-            obj_rect = pg.Rect(int(background_object[1][0] + true_scroll[0] * background_object[0]),
-                               int(background_object[1][1] + true_scroll[1] * background_object[0]),
-                               int(background_object[1][2]),
-                               int(background_object[1][3]))
-            if background_object[0] == 0.5:
-                pg.draw.rect(display, (14, 222, 150), obj_rect)
-            else:
-                pg.draw.rect(display, (9, 91, 85), obj_rect)
+        bg_objects((255, 0, 0), (0, 255, 0), background_objects_opacity, 50)
+        bg_objects((14, 222, 150), (9, 91, 85), background_objects, 255)
 
         # Construção do mapa
         tile_rect = []
@@ -195,8 +195,7 @@ def game_loop():
 
         # Mantém o personagem colidindo com o chão
         if collisions['bottom']:
-            air_timer = 0
-            vertical_momentum = 0
+            air_timer = vertical_momentum = 0
         else:
             air_timer += 1
 
@@ -258,7 +257,7 @@ def game_loop():
         # Update da tela, superfícies de movimento e FPS
         screen.blit(pg.transform.scale(display, win_size), (0, 0))
         surface_and_opacity((214, 107, 0), int(win_size[0] / 3), int(4 / 6 * win_size[1]),
-                            0, int(win_size[1] / 3), op_l_bg)
+0, int(win_size[1] / 3), op_l_bg)
         surface_and_opacity((214, 107, 0), int(win_size[0] / 3), int(4 / 6 * win_size[1]),
                             int(2 / 3 * win_size[0]), int(win_size[1] / 3), op_r_bg)
         surface_and_opacity((214, 107, 0), int(win_size[0] / 3 + 1), int(win_size[1] / 6),
