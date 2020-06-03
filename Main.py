@@ -221,6 +221,10 @@ def game_loop():
         else:
             op_ul_bg = op_ul_a = 20
 
+        # Morte do personagem
+        if air_timer > 70:
+            game_exit = True
+
         # Apurando eventos
         for event in pg.event.get():
             if event.type == pg.QUIT:
