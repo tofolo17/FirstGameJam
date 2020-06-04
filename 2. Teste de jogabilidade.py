@@ -115,6 +115,7 @@ def game_loop():
     player_rect = pg.Rect(100, 100, 5, 13)
 
     # Objetos do fundo e 'brilho"
+    bg = pg.image.load("Imagens//bg.png")
     background_objects_opacity = []
     background_objects = [[0.25, [120, 10, 70, 400]], [0.25, [280, 30, 40, 400]], [0.5, [30, 40, 40, 400]],
                           [0.5, [130, 90, 100, 400]], [0.5, [300, 80, 120, 400]]]
@@ -129,6 +130,7 @@ def game_loop():
     while not game_exit:
 
         display.fill((43, 23, 115))  # Cor de fundo
+        display.blit(bg, (0, 0))
 
         # Câmera
         true_scroll[0] -= ((player_rect.x + true_scroll[0]) - 152) / 12
@@ -137,6 +139,7 @@ def game_loop():
         scroll[0] = int(true_scroll[0])
         scroll[1] = int(true_scroll[1])
 
+        # Adiciona as estrelas ao céu
         for star in stars:
             pg.draw.line(display,
                          (255, 255, 255), (star[0], star[1]), (star[0], star[1]))
