@@ -9,7 +9,7 @@ os.environ['SDL_VIDEO_CENTERED'] = '1'  # Centralizando
 pg.init()  # Inicializando o Pygame
 
 # Tamanho da tela e título
-win_size = [500, 400]  # pg.display.Info().current_w - 5, pg.display.Info().current_h - 40
+win_size = [800, 600]  # pg.display.Info().current_w - 5, pg.display.Info().current_h - 40
 screen = pg.display.set_mode(size=win_size)
 pg.display.set_caption('Rocket Wave')
 display = pg.Surface((300, 200))
@@ -112,7 +112,7 @@ def game_loop():
     buildings2 = pg.image.load("Imagens//layer2.png")
     buildings3 = pg.image.load("Imagens//layer3.png")
     stars = []
-    for n in range(30):
+    for n in range(35):
         stars.append([randint(0, 300), randint(0, 90)])
 
     # Enquanto o jogo estiver aberto...
