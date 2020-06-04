@@ -32,7 +32,7 @@ def load_map(path):
 
 # Variáveis do mapa
 level_map = load_map('mapfile')
-solid_block = pg.image.load('Imagens//sprite_1.png')
+solid_block = pg.image.load('Imagens/block.png')
 solid_block_collided = pg.image.load('Imagens//sprite_0.png')
 
 
