@@ -37,6 +37,10 @@ half_block = pg.image.load('Imagens//block_2.png')
 half_block_vertical = pg.image.load('Imagens//block_3.png')
 half_block_right = pg.image.load('Imagens//block_4.png')
 half_block_left = pg.image.load('Imagens//block_5.png')
+half_support = pg.image.load('Imagens//block_6.png')
+glass = pg.image.load('Imagens//block_7.png')
+chimney = pg.image.load('Imagens//block_8.png')
+antenna = pg.image.load('Imagens//block_9.png')
 
 
 # Testa lugares colidíveis
@@ -120,10 +124,11 @@ def game_loop():
         stars.append([randint(0, 300), randint(0, 90)])
 
     # Convertendo elementos da matriz em blocos
-    def displaying_tile(block_name, w, h, n_block, corrector):
+    def displaying_tile(block_name, w, h, n_block, corrector_x, corrector_y, collide=0):
         if tile == f'{n_block}':
-            display.blit(block_name, (x * 16 + scroll[0] - corrector, y * 16 + scroll[1]))
-            tile_rect.append(pg.Rect(x * 16, y * 16, w, h))
+            display.blit(block_name, (x * 16 + scroll[0] - corrector_x, y * 16 + scroll[1] + corrector_y))
+            if not collide:
+                tile_rect.append(pg.Rect(x * 16, y * 16, w, h))
 
     # Enquanto o jogo estiver aberto...
     while not game_exit:
@@ -157,11 +162,15 @@ def game_loop():
         for layer in level_map:
             x = 0
             for tile in layer:
-                displaying_tile(full_block, 16, 16, 1, 0)
-                displaying_tile(half_block, 16, 4, 2, 0)
-                displaying_tile(half_block_vertical, 4, 16, 3, 6)
-                displaying_tile(half_block_right, 16, 4, 4, 0)
-                displaying_tile(half_block_left, 16, 4, 5, 0)
+                displaying_tile(full_block, 16, 16, 1, 0, 0)
+                displaying_tile(half_block, 16, 4, 2, 0, 0)
+                displaying_tile(half_block_vertical, 4, 16, 3, 6, 0)
+                displaying_tile(half_block_right, 16, 4, 4, 0, 0)
+                displaying_tile(half_block_left, 16, 4, 5, 0, 0)
+                displaying_tile(half_support, 16, 16, 6, 0, 0)
+                displaying_tile(glass, 16, 16, 7, 0, 9)
+                displaying_tile(chimney, 10, 10, 8, 0, 7, True)
+                displaying_tile(antenna, 84, 96, 9, 0, -76, True)
                 x += 1
             y += 1
 
