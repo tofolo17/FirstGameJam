@@ -74,15 +74,24 @@ def blit_arrow(x_a, y_a, angle_a, opacity_a, obj):
     display.blit(pg.transform.rotate(obj, angle_a), (x_a, y_a))
 
 
+# Efeito Parallax
+def bg_moving(x_bg, bg_layer, h):
+    rel_x = x_bg % bg_layer.get_rect().width
+    display.blit(bg_layer, (rel_x - bg_layer.get_rect().width, h))
+    if rel_x < win_size[0]:
+        display.blit(bg_layer, (rel_x, h))
+
+
 # Loop principal
 def game_loop():
+
     # Variáveis do loop
     game_exit = moving_left = moving_right = False
 
     # Variáveis físicas
-    vertical_momentum = air_timer = speed_timer = dt = x_bg = 0
+    vertical_momentum = air_timer = speed_timer = dt = 0
     permitted_vm = [0, 0.3, 0.6, 0.8999999999999999, 1.2, 1.5]
-    stars_speed = 0.35
+    stars_speed = 0.3
 
     # Variáveis da opacidade
     op_r_a = op_l_a = op_u_a = op_ur_a = op_ul_a = 70
@@ -97,11 +106,14 @@ def game_loop():
     player_rect = pg.Rect(100, 100, 5, 13)
 
     # Objetos do fundo
+    x_layer1 = x_layer2 = x_layer3 = 0
     background = pg.image.load("Imagens//bg.png")
     buildings1 = pg.image.load("Imagens//layer1.png")
+    buildings2 = pg.image.load("Imagens//layer2.png")
+    buildings3 = pg.image.load("Imagens//layer3.png")
     stars = []
-    for n in range(40):
-        stars.append([randint(0, 300), randint(0, 80)])
+    for n in range(30):
+        stars.append([randint(0, 300), randint(0, 90)])
 
     # Enquanto o jogo estiver aberto...
     while not game_exit:
@@ -110,14 +122,9 @@ def game_loop():
         display.blit(background, (0, 0))  # Fundo gradiente
 
         # Movimentação das construções
-        rel_x = x_bg % buildings1.get_rect().width
-        display.blit(buildings1, (rel_x - background.get_rect().width, 99))
-        if rel_x < win_size[0]:
-            display.blit(buildings1, (rel_x, 99))
-        if moving_right:
-            x_bg -= 0.5
-        elif moving_left:
-            x_bg += 0.5
+        bg_moving(x_layer3, buildings3, 95)
+        bg_moving(x_layer2, buildings2, 85)
+        bg_moving(x_layer1, buildings1, 100)
 
         # Câmera
         true_scroll[0] -= ((player_rect.x + true_scroll[0]) - 152) / 12
@@ -132,7 +139,7 @@ def game_loop():
             star[0] = star[0] - stars_speed
             if star[0] < 0:
                 star[0] = 300
-                star[1] = randint(0, 80)
+                star[1] = randint(0, 90)
 
         # Construção do mapa
         tile_rect = []
@@ -156,14 +163,20 @@ def game_loop():
         if moving_right:
             speed_timer += dt
             player_movement[0] += speed_boost
-            stars_speed = 0.45
+            stars_speed = 0.4
+            x_layer1 -= 0.5
+            x_layer2 -= 0.3
+            x_layer3 -= 0.15
         elif moving_left:
             speed_timer += dt
             player_movement[0] -= speed_boost
-            stars_speed = 0.25
+            stars_speed = 0.2
+            x_layer1 += 0.5
+            x_layer2 += 0.3
+            x_layer3 += 0.15
         else:
             speed_timer = 0
-            stars_speed = 0.35
+            stars_speed = 0.3
         player_movement[1] += vertical_momentum
         vertical_momentum += 0.3
         if vertical_momentum > 5:
@@ -173,14 +186,14 @@ def game_loop():
         player_rect, collisions = move(player_rect, player_movement, tile_rect)
 
         # Não deixa a tela se mexer quando colidido com a parede
-        if not collisions['right']:
-            x_bg = x_bg
-        else:
-            x_bg += 0.5
-        if not collisions['left']:
-            x_bg = x_bg
-        else:
-            x_bg -= 0.5
+        if collisions['right']:
+            x_layer1 += 0.5
+            x_layer2 += 0.3
+            x_layer3 += 0.15
+        if collisions['left']:
+            x_layer1 -= 0.5
+            x_layer2 -= 0.3
+            x_layer3 -= 0.15
 
         # Mantém o personagem colidindo com o chão
         if collisions['bottom']:
@@ -238,7 +251,7 @@ def game_loop():
             if event.type == pg.QUIT:
                 game_exit = True
 
-        # Update da tela, superfícies de movimento e FPS
+        # Update da tela e FPS
         screen.blit(pg.transform.scale(display, win_size), (0, 0))
         pg.display.update()
         dt = clock.tick(60) / 1000
