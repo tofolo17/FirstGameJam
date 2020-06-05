@@ -30,10 +30,10 @@ def load_map(path):
     return game_map
 
 
-# global animation_frames
-animation_frames = {}
+animation_frames = {}  # Frames das animações
 
 
+# Checando as animações nas pastas e alocando-as em listas
 def load_animation(path, frame_durations):
     global animation_frames
     animation_name = path.split('/')[-1]
@@ -51,6 +51,7 @@ def load_animation(path, frame_durations):
     return animation_frame_data
 
 
+# Transição entre animações
 def change_action(action_var, frame, new_value):
     if action_var != new_value:
         action_var = new_value
@@ -58,6 +59,7 @@ def change_action(action_var, frame, new_value):
     return action_var, frame
 
 
+# Dicionário que guarda as informações sobre as animações
 animation_database = {'idle': load_animation('Player Animations/idle', [7, 7, 7, 7]),
                       'run': load_animation('Player Animations/run', [7, 7, 7, 7, 7, 7, 7, 7])}
 
@@ -124,8 +126,6 @@ def bg_moving(x_bg, bg_layer, h):
 
 # Loop principal
 def game_loop():
-
-    print(animation_database)
 
     # Variáveis do loop
     game_exit = moving_left = moving_right = False
@@ -238,6 +238,7 @@ def game_loop():
         if vertical_momentum > 5:
             vertical_momentum = 5
 
+        # Direção e animações do personagem
         if player_movement[0] == 0:
             player_action, player_frame = change_action(player_action, player_frame, 'idle')
         if player_movement[0] > 0:
@@ -266,7 +267,7 @@ def game_loop():
         else:
             air_timer += 1
 
-        # Põe o personagem e as setas na tela
+        # Transição entre os frames armazenados
         player_frame += 1
         if player_frame >= len(animation_database[player_action]):
             player_frame = 0
@@ -274,6 +275,8 @@ def game_loop():
         player_img = animation_frames[player_img_id]
         display.blit(pg.transform.flip(player_img, player_flip, False),
                      (player_rect.x - scroll[0], player_rect.y - scroll[1]))
+
+        # Colocando as setas na tela
         blit_arrow(41, 100, 180, op_l_a, arrow)
         blit_arrow(225, 35, 45, op_ur_a, arrow)
         blit_arrow(41, 35, 135, op_ul_a, arrow)
