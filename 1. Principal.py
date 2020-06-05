@@ -37,10 +37,11 @@ half_block = pg.image.load('Imagens//block_2.png')
 half_block_vertical = pg.image.load('Imagens//block_3.png')
 half_block_right = pg.image.load('Imagens//block_4.png')
 half_block_left = pg.image.load('Imagens//block_5.png')
-half_support = pg.image.load('Imagens//block_6.png')
-glass = pg.image.load('Imagens//block_7.png')
-chimney = pg.image.load('Imagens//block_8.png')
-antenna = pg.image.load('Imagens//block_9.png')
+half_support_right = pg.image.load('Imagens//block_6.png')
+half_support_left = pg.image.load('Imagens//block_7.png')
+glass = pg.image.load('Imagens//block_8.png')
+chimney = pg.image.load('Imagens//block_9.png')
+antenna = pg.image.load('Imagens//block_10.png')
 
 
 # Testa lugares colidíveis
@@ -111,7 +112,7 @@ def game_loop():
     # Variáveis do personagem
     player_image = pg.image.load('Imagens//player.png').convert()
     player_image.set_colorkey((255, 255, 255))
-    player_rect = pg.Rect(100, 100, 5, 13)
+    player_rect = pg.Rect(100, 116, 5, 13)
 
     # Objetos do fundo
     x_layer1 = x_layer2 = x_layer3 = 0
@@ -167,10 +168,11 @@ def game_loop():
                 displaying_tile(half_block_vertical, 4, 16, 3, 6, 0)
                 displaying_tile(half_block_right, 16, 4, 4, 0, 0)
                 displaying_tile(half_block_left, 16, 4, 5, 0, 0)
-                displaying_tile(half_support, 16, 16, 6, 0, 0)
-                displaying_tile(glass, 16, 16, 7, 0, 9)
-                displaying_tile(chimney, 10, 10, 8, 0, 7, True)
-                displaying_tile(antenna, 84, 96, 9, 0, -76, True)
+                displaying_tile(half_support_right, 16, 16, 6, 0, 0)
+                displaying_tile(half_support_left, 16, 16, 7, 0, 0)
+                displaying_tile(glass, 16, 16, 8, 0, 0)
+                displaying_tile(chimney, 10, 10, 9, 0, 7, True)
+                displaying_tile(antenna, 84, 96, 10, 0, -76, True)
                 x += 1
             y += 1
 
