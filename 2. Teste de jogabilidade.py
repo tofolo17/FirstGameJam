@@ -4,12 +4,12 @@ from random import randint
 
 import pygame as pg
 
-os.environ['SDL_VIDEO_CENTERED'] = '1'
+os.environ['SDL_VIDEO_CENTERED'] = '1'  # Centralizando
 
-pg.init()
+pg.init()  # Inicializando o Pygame
 
 # Tamanho da tela e título
-win_size = [pg.display.Info().current_w - 5, pg.display.Info().current_h - 40]
+win_size = [800, 600]  # pg.display.Info().current_w - 5, pg.display.Info().current_h - 40
 screen = pg.display.set_mode(size=win_size)
 pg.display.set_caption('Rocket Wave')
 display = pg.Surface((300, 200))
@@ -32,16 +32,56 @@ def load_map(path):
 
 # Variáveis do mapa
 level_map = load_map('mapfile')
-solid_block = pg.image.load('Imagens/block.png')
-solid_block_collided = pg.image.load('Imagens//sprite_0.png')
+full_block = pg.image.load('Imagens/block_1.png')
+half_block = pg.image.load('Imagens//block_2.png')
+half_block_vertical = pg.image.load('Imagens//block_3.png')
+half_block_right = pg.image.load('Imagens//block_4.png')
+half_block_left = pg.image.load('Imagens//block_5.png')
+half_support = pg.image.load('Imagens//block_6.png')
+glass = pg.image.load('Imagens//block_7.png')
+chimney = pg.image.load('Imagens//block_8.png')
+antenna = pg.image.load('Imagens//block_9.png')
+
+global animation_frames
+animation_frames = {}
+
+
+def load_animation(path, frame_durations):
+    global animation_frames
+    animation_name = path.split('/')[-1]
+    animation_frame_data = []
+    n = 0
+    for frame in frame_durations:
+        animation_frame_id = animation_name + '_' + str(n)
+        img_loc = path + '/' + animation_frame_id + '.png'
+        animation_image = pg.image.load(img_loc).convert()
+        animation_image.set_colorkey((0, 114, 188))
+        animation_frames[animation_frame_id] = animation_image.copy()
+        for i in range(frame):
+            animation_frame_data.append(animation_frame_id)
+        n += 1
+    return animation_frame_data
+
+
+def change_action(action_var, frame, new_value):
+    if action_var != new_value:
+        action_var = new_value
+        frame = 0
+    return action_var, frame
+
+
+animation_database = {}
+
+animation_database['run'] = load_animation('Player Animations/run', [7, 7, 7, 7, 7, 7, 7, 7])
+animation_database['idle'] = load_animation('Player Animations/idle', [7, 7, 7, 7])
 
 
 # Testa lugares colidíveis
 def collision_test(rect, tiles):
     hit_list = []
-    for tile in tiles:
-        if rect.colliderect(tile):
-            hit_list.append(tile)
+    for each_tile in tiles:
+        if rect.colliderect(each_tile):
+            hit_list.append(each_tile)
     return hit_list
 
 
@@ -69,90 +109,86 @@ def move(rect, movement, tiles):
     return rect, collision_types
 
 
-# Colocando superfícies opacas na tela
-def surface_and_opacity(color, width, height, x_pos, y_pos, opacity):
-    colored_surface = pg.Surface((width, height))
-    pg.Surface.fill(colored_surface, color)
-    colored_surface.set_alpha(opacity)
-    display.blit(colored_surface, (x_pos, y_pos))
-
-
-# Adicionando peças do efeito Parallax
-def bg_objects(color1, obj_to_display, opacity, multiplier):
-    for element in obj_to_display:
-        if element[0] == multiplier:
-            surface_and_opacity(
-                color1, int(element[1][2]), int(element[1][3]), int(element[1][0] + true_scroll[0] * element[0]),
-                int(element[1][1] + true_scroll[1] * element[0]), opacity)
-
-
 # Colocando imagens opacas na tela
 def blit_arrow(x_a, y_a, angle_a, opacity_a, obj):
     obj.set_alpha(opacity_a)
     display.blit(pg.transform.rotate(obj, angle_a), (x_a, y_a))
 
 
+# Efeito Parallax
+def bg_moving(x_bg, bg_layer, h):
+    rel_x = x_bg % bg_layer.get_rect().width
+    display.blit(bg_layer, (rel_x - bg_layer.get_rect().width, h))
+    if rel_x < win_size[0]:
+        display.blit(bg_layer, (rel_x, h))
+
+
 # Loop principal
 def game_loop():
+
     # Variáveis do loop
     game_exit = moving_left = moving_right = False
 
     # Variáveis físicas
     vertical_momentum = air_timer = speed_timer = dt = 0
     permitted_vm = [0, 0.3, 0.6, 0.8999999999999999, 1.2, 1.5]
-    stars_speed = 0.35
+    stars_speed = 0.3
 
     # Variáveis da opacidade
     op_r_a = op_l_a = op_u_a = op_ur_a = op_ul_a = 70
 
-    touched_list = []  # Últimos blocks tocados
-
-    # Variáveis do personagem e da seta
+    # Variáveis das setas
     arrow = pg.image.load('Imagens//seta.png').convert_alpha()
     arrow.set_colorkey((255, 255, 255))
-    player_image = pg.image.load('Imagens//player.png').convert()
-    player_image.set_colorkey((255, 255, 255))
-    player_rect = pg.Rect(100, 100, 5, 13)
 
-    # Objetos do fundo e 'brilho"
-    bg = pg.image.load("Imagens//bg.png")
-    background_objects_opacity = []
-    background_objects = [[0.25, [120, 10, 70, 400]], [0.25, [280, 30, 40, 400]], [0.5, [30, 40, 40, 400]],
-                          [0.5, [130, 90, 100, 400]], [0.5, [300, 80, 120, 400]]]
-    for values in background_objects:
-        background_objects_opacity.append([values[0], [values[1][0] - 5, values[1][1] - 5,
-                                                       values[1][2] + 10, values[1][3]]])
+    # Variáveis do personagem
+    player_action = 'idle'
+    player_frame = 0
+    player_flip = False
+    player_rect = pg.Rect(100, 100, 25, 30)
+
+    # Objetos do fundo
+    x_layer1 = x_layer2 = x_layer3 = 0
+    background = pg.image.load("Imagens//bg.png")
+    buildings1 = pg.image.load("Imagens//layer1.png")
+    buildings2 = pg.image.load("Imagens//layer2.png")
+    buildings3 = pg.image.load("Imagens//layer3.png")
     stars = []
-    for n in range(50):
-        stars.append([randint(0, 300), randint(0, 200)])
+    for n in range(35):
+        stars.append([randint(0, 300), randint(0, 90)])
+
+    # Convertendo elementos da matriz em blocos
+    def displaying_tile(block_name, w, h, n_block, corrector_x, corrector_y, collide=0):
+        if tile == f'{n_block}':
+            display.blit(block_name, (x * 16 + scroll[0] - corrector_x, y * 16 + scroll[1] + corrector_y))
+            if not collide:
+                tile_rect.append(pg.Rect(x * 16, y * 16, w, h))
 
     # Enquanto o jogo estiver aberto...
     while not game_exit:
 
-        display.fill((43, 23, 115))  # Cor de fundo
-        display.blit(bg, (0, 0))
+        display.fill((0, 0, 0))  # Preenchendo a tela com algo
+        display.blit(background, (0, 0))  # Fundo gradiente
+
+        # Movimentação das construções
+        bg_moving(x_layer3, buildings3, 95)
+        bg_moving(x_layer2, buildings2, 85)
+        bg_moving(x_layer1, buildings1, 100)
 
         # Câmera
         true_scroll[0] -= ((player_rect.x + true_scroll[0]) - 152) / 12
-        true_scroll[1] -= ((player_rect.y + true_scroll[1]) - 130) / 12
+        true_scroll[1] -= ((player_rect.y + true_scroll[1]) - 140) / 12
         scroll = true_scroll.copy()
         scroll[0] = int(true_scroll[0])
         scroll[1] = int(true_scroll[1])
 
         # Adiciona as estrelas ao céu
         for star in stars:
-            pg.draw.line(display,
-                         (255, 255, 255), (star[0], star[1]), (star[0], star[1]))
+            pg.draw.line(display, (255, 255, 255), (star[0], star[1]), (star[0], star[1]))
             star[0] = star[0] - stars_speed
             if star[0] < 0:
                 star[0] = 300
-                star[1] = randint(0, 200)
-
-        # Construção do fundo
-        bg_objects((242, 87, 129), background_objects_opacity, 50, 0.25)
-        bg_objects((33, 2, 63), background_objects, 255, 0.25)
-        bg_objects((217, 35, 135), background_objects_opacity, 50, 0.5)
-        bg_objects((78, 5, 67), background_objects, 255, 0.5)
+                star[1] = randint(0, 90)
 
         # Construção do mapa
         tile_rect = []
@@ -160,10 +196,15 @@ def game_loop():
         for layer in level_map:
             x = 0
             for tile in layer:
-                if tile == '1':
-                    display.blit(solid_block, (x * 16 + scroll[0], y * 16 + scroll[1]))
-                if tile != '0':
-                    tile_rect.append(pg.Rect(x * 16, y * 16, 16, 16))
+                displaying_tile(full_block, 16, 16, 1, 0, 0)
+                displaying_tile(half_block, 16, 4, 2, 0, 0)
+                displaying_tile(half_block_vertical, 4, 16, 3, 6, 0)
+                displaying_tile(half_block_right, 16, 4, 4, 0, 0)
+                displaying_tile(half_block_left, 16, 4, 5, 0, 0)
+                displaying_tile(half_support, 16, 16, 6, 0, 0)
+                displaying_tile(glass, 16, 16, 7, 0, 9)
+                displaying_tile(chimney, 10, 10, 8, 0, 7, True)
+                displaying_tile(antenna, 84, 96, 9, 0, -76, True)
                 x += 1
             y += 1
 
@@ -176,14 +217,20 @@ def game_loop():
         if moving_right:
             speed_timer += dt
             player_movement[0] += speed_boost
-            stars_speed = 0.45
+            stars_speed = 0.4
+            x_layer1 -= 0.5
+            x_layer2 -= 0.3
+            x_layer3 -= 0.15
         elif moving_left:
             speed_timer += dt
             player_movement[0] -= speed_boost
-            stars_speed = 0.25
+            stars_speed = 0.2
+            x_layer1 += 0.5
+            x_layer2 += 0.3
+            x_layer3 += 0.15
         else:
             speed_timer = 0
-            stars_speed = 0.35
+            stars_speed = 0.3
         player_movement[1] += vertical_momentum
         vertical_momentum += 0.3
         if vertical_momentum > 5:
@@ -192,20 +239,15 @@ def game_loop():
         # Relacionando o jogador e o mapa
         player_rect, collisions = move(player_rect, player_movement, tile_rect)
 
-        # Trocando o bloco de onde colidir
-        for tile in tile_rect:
-            if tile.top == player_rect.bottom:
-                for i in range(1, 16):
-                    if tile.x + i == player_rect.x:
-                        if [tile.x, tile.y] not in touched_list:
-                            touched_list.append([tile.x, tile.y])
-                            if len(touched_list) > 3:
-                                touched_list.remove(touched_list[0])
-            for xy in touched_list:
-                if vertical_momentum in permitted_vm:
-                    display.blit(solid_block_collided, (xy[0] + true_scroll[0], xy[1] + true_scroll[1]))
-                else:
-                    touched_list.clear()
+        # Não deixa a tela se mexer quando colidido com a parede
+        if collisions['right']:
+            x_layer1 += 0.5
+            x_layer2 += 0.3
+            x_layer3 += 0.15
+        if collisions['left']:
+            x_layer1 -= 0.5
+            x_layer2 -= 0.3
+            x_layer3 -= 0.15
 
         # Mantém o personagem colidindo com o chão
         if collisions['bottom']:
@@ -214,14 +256,21 @@ def game_loop():
             air_timer += 1
 
         # Põe o personagem e as setas na tela
-        display.blit(player_image, (player_rect.x + scroll[0], player_rect.y + scroll[1]))
+        player_frame += 1
+        if player_frame >= len(animation_database[player_action]):
+            player_frame = 0
+        player_img_id = animation_database[player_action][player_frame]
+        player_img = animation_frames[player_img_id]
+        display.blit(pg.transform.flip(player_img, player_flip, False),
+                     (player_rect.x + scroll[0], player_rect.y + scroll[1]))
+
         blit_arrow(41, 100, 180, op_l_a, arrow)
         blit_arrow(225, 35, 45, op_ur_a, arrow)
         blit_arrow(41, 35, 135, op_ul_a, arrow)
         blit_arrow(141, 35, 90, op_u_a, arrow)
         blit_arrow(225, 100, 0, op_r_a, arrow)
 
-        x, y = pg.mouse.get_pos()
+        x, y = pg.mouse.get_pos()  # Pegando as coordenadas do mouse
         # Movimentos em X
         if x > (2 / 3 * win_size[0]) and (y > win_size[1] / 6):
             moving_left = False
@@ -246,7 +295,7 @@ def game_loop():
         elif collisions['bottom']:
             op_u_a = op_ul_a = op_ur_a = 70
 
-        # Analisando opacidade das setas horizontais
+        # Analisando opacidade das setas diagonais
         if op_u_a == 100 and op_r_a == 100:
             op_ur_a = 100
         elif op_u_a == 100 and op_l_a == 100:
@@ -263,7 +312,7 @@ def game_loop():
             if event.type == pg.QUIT:
                 game_exit = True
 
-        # Update da tela, superfícies de movimento e FPS
+        # Update da tela e FPS
         screen.blit(pg.transform.scale(display, win_size), (0, 0))
         pg.display.update()
         dt = clock.tick(60) / 1000

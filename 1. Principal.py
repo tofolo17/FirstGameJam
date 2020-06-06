@@ -30,6 +30,19 @@ def load_map(path):
     return game_map
 
 
+# Variáveis do mapa
+level_map = load_map('mapfile')
+full_block = pg.image.load('Imagens/block_1.png')
+half_block = pg.image.load('Imagens//block_2.png')
+half_block_vertical = pg.image.load('Imagens//block_3.png')
+half_block_right = pg.image.load('Imagens//block_4.png')
+half_block_left = pg.image.load('Imagens//block_5.png')
+half_support_right = pg.image.load('Imagens//block_6.png')
+half_support_left = pg.image.load('Imagens//block_7.png')
+glass = pg.image.load('Imagens//block_8.png')
+chimney = pg.image.load('Imagens//block_9.png')
+antenna = pg.image.load('Imagens//block_10.png')
+
 animation_frames = {}  # Frames das animações
 
 
@@ -62,19 +75,6 @@ def change_action(action_var, frame, new_value):
 # Dicionário que guarda as informações sobre as animações
 animation_database = {'idle': load_animation('Player Animations/idle', [7, 7, 7, 7]),
                       'run': load_animation('Player Animations/run', [7, 7, 7, 7, 7, 7, 7, 7])}
-
-# Variáveis do mapa
-level_map = load_map('mapfile')
-full_block = pg.image.load('Imagens/block_1.png')
-half_block = pg.image.load('Imagens//block_2.png')
-half_block_vertical = pg.image.load('Imagens//block_3.png')
-half_block_right = pg.image.load('Imagens//block_4.png')
-half_block_left = pg.image.load('Imagens//block_5.png')
-half_support_right = pg.image.load('Imagens//block_6.png')
-half_support_left = pg.image.load('Imagens//block_7.png')
-glass = pg.image.load('Imagens//block_8.png')
-chimney = pg.image.load('Imagens//block_9.png')
-antenna = pg.image.load('Imagens//block_10.png')
 
 
 # Testa lugares colidíveis
@@ -143,10 +143,10 @@ def game_loop():
     arrow.set_colorkey((255, 255, 255))
 
     # Variáveis do personagem
-    player_rect = pg.Rect(100, 116, 5, 13)
+    player_rect = pg.Rect(100, 100, 25, 30)
     player_action = 'idle'
-    player_frame = 0
     player_flip = False
+    player_frame = 0
 
     # Objetos do fundo
     x_layer1 = x_layer2 = x_layer3 = 0
@@ -178,7 +178,7 @@ def game_loop():
 
         # Câmera
         true_scroll[0] -= ((player_rect.x + true_scroll[0]) - 152) / 12
-        true_scroll[1] -= ((player_rect.y + true_scroll[1]) - 140) / 12
+        true_scroll[1] -= ((player_rect.y + true_scroll[1]) - 106) / 12
         scroll = true_scroll.copy()
         scroll[0] = int(true_scroll[0])
         scroll[1] = int(true_scroll[1])
@@ -217,36 +217,31 @@ def game_loop():
         else:
             speed_boost = 2
         if moving_right:
-            speed_timer += dt
+            player_action, player_frame = change_action(player_action, player_frame, 'run')
             player_movement[0] += speed_boost
+            player_flip = False
+            speed_timer += dt
             stars_speed = 0.4
             x_layer1 -= 0.5
             x_layer2 -= 0.3
             x_layer3 -= 0.15
         elif moving_left:
-            speed_timer += dt
+            player_action, player_frame = change_action(player_action, player_frame, 'run')
             player_movement[0] -= speed_boost
+            player_flip = True
+            speed_timer += dt
             stars_speed = 0.2
             x_layer1 += 0.5
             x_layer2 += 0.3
             x_layer3 += 0.15
         else:
-            speed_timer = 0
+            player_action, player_frame = change_action(player_action, player_frame, 'idle')
             stars_speed = 0.3
+            speed_timer = 0
         player_movement[1] += vertical_momentum
         vertical_momentum += 0.3
         if vertical_momentum > 5:
             vertical_momentum = 5
-
-        # Direção e animações do personagem
-        if player_movement[0] == 0:
-            player_action, player_frame = change_action(player_action, player_frame, 'idle')
-        if player_movement[0] > 0:
-            player_flip = False
-            player_action, player_frame = change_action(player_action, player_frame, 'run')
-        if player_movement[0] < 0:
-            player_flip = True
-            player_action, player_frame = change_action(player_action, player_frame, 'run')
 
         # Relacionando o jogador e o mapa
         player_rect, collisions = move(player_rect, player_movement, tile_rect)
@@ -274,7 +269,7 @@ def game_loop():
         player_img_id = animation_database[player_action][player_frame]
         player_img = animation_frames[player_img_id]
         display.blit(pg.transform.flip(player_img, player_flip, False),
-                     (player_rect.x - scroll[0], player_rect.y - scroll[1]))
+                     (player_rect.x + scroll[0], player_rect.y + scroll[1]))
 
         # Colocando as setas na tela
         blit_arrow(41, 100, 180, op_l_a, arrow)
