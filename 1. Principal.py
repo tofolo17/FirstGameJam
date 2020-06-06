@@ -9,10 +9,10 @@ os.environ['SDL_VIDEO_CENTERED'] = '1'  # Centralizando
 pg.init()  # Inicializando o Pygame
 
 # Tamanho da tela e título
-win_size = [800, 600]  # pg.display.Info().current_w - 5, pg.display.Info().current_h - 40
+win_size = [600, 400]  # pg.display.Info().current_w - 5, pg.display.Info().current_h - 40
 screen = pg.display.set_mode(size=win_size)
 pg.display.set_caption('Rocket Wave')
-display = pg.Surface((300, 200))
+display = pg.Surface((600, 400))
 clock = pg.time.Clock()
 
 true_scroll = [0, 0]  # Variável para o seguir da câmera
@@ -136,7 +136,7 @@ def game_loop():
     stars_speed = 0.3
 
     # Variáveis da opacidade
-    op_r_a = op_l_a = op_u_a = op_ur_a = op_ul_a = 70
+    right_arrow_opacity = left_arrow_opacity = upper_arrow_opacity = up_right_arrow_opacity = up_left_arrow_opacity = 70
 
     # Variáveis das setas
     arrow = pg.image.load('Imagens//seta.png').convert_alpha()
@@ -149,14 +149,14 @@ def game_loop():
     player_frame = 0
 
     # Objetos do fundo
-    x_layer1 = x_layer2 = x_layer3 = 0
+    x_building1 = x_building2 = x_building3 = 0
     background = pg.image.load("Imagens//bg.png")
     buildings1 = pg.image.load("Imagens//layer1.png")
     buildings2 = pg.image.load("Imagens//layer2.png")
     buildings3 = pg.image.load("Imagens//layer3.png")
     stars = []
-    for n in range(35):
-        stars.append([randint(0, 300), randint(0, 90)])
+    for n in range(45):
+        stars.append([randint(0, 600), randint(0, 140)])
 
     # Convertendo elementos da matriz em blocos
     def displaying_tile(block_name, w, h, n_block, corrector_x, corrector_y, collide=0):
@@ -172,13 +172,13 @@ def game_loop():
         display.blit(background, (0, 0))  # Fundo gradiente
 
         # Movimentação das construções
-        bg_moving(x_layer3, buildings3, 95)
-        bg_moving(x_layer2, buildings2, 85)
-        bg_moving(x_layer1, buildings1, 100)
+        bg_moving(x_building3, buildings3, 165)
+        bg_moving(x_building2, buildings2, 170)
+        bg_moving(x_building1, buildings1, 210)
 
         # Câmera
-        true_scroll[0] -= ((player_rect.x + true_scroll[0]) - 152) / 12
-        true_scroll[1] -= ((player_rect.y + true_scroll[1]) - 106) / 12
+        true_scroll[0] -= ((player_rect.x + true_scroll[0]) - 230) / 12
+        true_scroll[1] -= ((player_rect.y + true_scroll[1]) - 250) / 12
         scroll = true_scroll.copy()
         scroll[0] = int(true_scroll[0])
         scroll[1] = int(true_scroll[1])
@@ -188,8 +188,8 @@ def game_loop():
             pg.draw.line(display, (255, 255, 255), (star[0], star[1]), (star[0], star[1]))
             star[0] = star[0] - stars_speed
             if star[0] < 0:
-                star[0] = 300
-                star[1] = randint(0, 90)
+                star[0] = 600
+                star[1] = randint(0, 140)
 
         # Construção do mapa
         tile_rect = []
@@ -222,18 +222,18 @@ def game_loop():
             player_flip = False
             speed_timer += dt
             stars_speed = 0.4
-            x_layer1 -= 0.5
-            x_layer2 -= 0.3
-            x_layer3 -= 0.15
+            x_building1 -= 0.5
+            x_building2 -= 0.3
+            x_building3 -= 0.15
         elif moving_left:
             player_action, player_frame = change_action(player_action, player_frame, 'run')
             player_movement[0] -= speed_boost
             player_flip = True
             speed_timer += dt
             stars_speed = 0.2
-            x_layer1 += 0.5
-            x_layer2 += 0.3
-            x_layer3 += 0.15
+            x_building1 += 0.5
+            x_building2 += 0.3
+            x_building3 += 0.15
         else:
             player_action, player_frame = change_action(player_action, player_frame, 'idle')
             stars_speed = 0.3
@@ -248,13 +248,13 @@ def game_loop():
 
         # Não deixa a tela se mexer quando colidido com a parede
         if collisions['right']:
-            x_layer1 += 0.5
-            x_layer2 += 0.3
-            x_layer3 += 0.15
+            x_building1 += 0.5
+            x_building2 += 0.3
+            x_building3 += 0.15
         if collisions['left']:
-            x_layer1 -= 0.5
-            x_layer2 -= 0.3
-            x_layer3 -= 0.15
+            x_building1 -= 0.5
+            x_building2 -= 0.3
+            x_building3 -= 0.15
 
         # Mantém o personagem colidindo com o chão
         if collisions['bottom']:
@@ -272,44 +272,45 @@ def game_loop():
                      (player_rect.x + scroll[0], player_rect.y + scroll[1]))
 
         # Colocando as setas na tela
-        blit_arrow(41, 100, 180, op_l_a, arrow)
-        blit_arrow(225, 35, 45, op_ur_a, arrow)
-        blit_arrow(41, 35, 135, op_ul_a, arrow)
-        blit_arrow(141, 35, 90, op_u_a, arrow)
-        blit_arrow(225, 100, 0, op_r_a, arrow)
+        blit_arrow(50, 200, 180, left_arrow_opacity, arrow)
+        blit_arrow(482, 70, 45, up_right_arrow_opacity, arrow)
+        blit_arrow(50, 70, 135, up_left_arrow_opacity, arrow)
+        blit_arrow(279, 70, 90, upper_arrow_opacity, arrow)
+        blit_arrow(492, 200, 0, right_arrow_opacity, arrow)
 
         x, y = pg.mouse.get_pos()  # Pegando as coordenadas do mouse
         # Movimentos em X
         if x > (2 / 3 * win_size[0]) and (y > win_size[1] / 6):
             moving_left = False
             moving_right = True
-            op_r_a = 100
+            right_arrow_opacity = 100
         elif x < win_size[0] / 3 and (y > win_size[1] / 6):
             moving_right = False
             moving_left = True
-            op_l_a = 100
+            left_arrow_opacity = 100
         else:
             moving_right = moving_left = False
-            op_r_a = op_l_a = op_u_a = op_ur_a = op_ul_a = 70
+            right_arrow_opacity = left_arrow_opacity = upper_arrow_opacity\
+                = up_right_arrow_opacity = up_left_arrow_opacity = 70
 
         # Movimentos em Y
         if (y < win_size[1] / 3) and (y > win_size[1] / 6) and air_timer < 8:
-            op_u_a = 100
+            upper_arrow_opacity = 100
             if collisions['top']:
                 vertical_momentum = -1
             elif collisions['bottom']:
                 vertical_momentum = -6
                 collisions['top'] = True
         elif collisions['bottom']:
-            op_u_a = op_ul_a = op_ur_a = 70
+            upper_arrow_opacity = up_left_arrow_opacity = up_right_arrow_opacity = 70
 
         # Analisando opacidade das setas diagonais
-        if op_u_a == 100 and op_r_a == 100:
-            op_ur_a = 100
-        elif op_u_a == 100 and op_l_a == 100:
-            op_ul_a = 100
+        if upper_arrow_opacity == 100 and right_arrow_opacity == 100:
+            up_right_arrow_opacity = 100
+        elif upper_arrow_opacity == 100 and left_arrow_opacity == 100:
+            up_left_arrow_opacity = 100
         else:
-            op_ul_a = 70
+            up_left_arrow_opacity = 70
 
         # Morte do personagem
         if air_timer > 80:
