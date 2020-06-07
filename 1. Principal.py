@@ -1,6 +1,6 @@
 import os
 import sys
-from random import randint
+from random import randint, choice
 
 import pygame as pg
 
@@ -74,7 +74,8 @@ def change_action(action_var, frame, new_value):
 
 # Dicionário que guarda as informações sobre as animações
 animation_database = {'idle': load_animation('Player Animations/idle', [7, 7, 7, 7]),
-                      'run': load_animation('Player Animations/run', [7, 7, 7, 7, 7, 7, 7, 7])}
+                      'run': load_animation('Player Animations/run', [7, 7, 7, 7, 7, 7, 7, 7]),
+                      'jump': load_animation('Player Animations/jump', [7, 7, 7, 7, 7, 7, 7, 7, 7])}
 
 
 # Testa lugares colidíveis
@@ -126,21 +127,25 @@ def bg_moving(x_bg, bg_layer, h):
 
 # Loop principal
 def game_loop():
-
     # Variáveis do loop
     game_exit = moving_left = moving_right = False
 
     # Variáveis físicas
-    vertical_momentum = air_timer = speed_timer = dt = 0
+    vertical_momentum = air_timer = speed_timer = charge_timer = dt = 0
     permitted_vm = [0, 0.3, 0.6, 0.8999999999999999, 1.2, 1.5]
     stars_speed = 0.3
+    time_to_use = 8
 
     # Variáveis da opacidade
-    right_arrow_opacity = left_arrow_opacity = upper_arrow_opacity = up_right_arrow_opacity = up_left_arrow_opacity = 70
+    right_arrow_opacity = left_arrow_opacity = upper_arrow_opacity = up_right_arrow_opacity = \
+        up_left_arrow_opacity = super_arrow_opacity = 70
 
     # Variáveis das setas
+    rocket_arrow = pg.image.load('Imagens//seta_foguete.png').convert_alpha()
     arrow = pg.image.load('Imagens//seta.png').convert_alpha()
     arrow.set_colorkey((255, 255, 255))
+
+    bullet = pg.image.load('Imagens/bullet.png')
 
     # Variáveis do personagem
     player_rect = pg.Rect(100, 100, 25, 30)
@@ -240,8 +245,8 @@ def game_loop():
             speed_timer = 0
         player_movement[1] += vertical_momentum
         vertical_momentum += 0.3
-        if vertical_momentum > 5:
-            vertical_momentum = 5
+        if vertical_momentum > 7:
+            vertical_momentum = 7
 
         # Relacionando o jogador e o mapa
         player_rect, collisions = move(player_rect, player_movement, tile_rect)
@@ -261,6 +266,8 @@ def game_loop():
             air_timer = vertical_momentum = 0
         else:
             air_timer += 1
+            if air_timer > 5:
+                player_action, player_frame = change_action(player_action, player_frame, 'jump')
 
         # Transição entre os frames armazenados
         player_frame += 1
@@ -277,6 +284,7 @@ def game_loop():
         blit_arrow(50, 70, 135, up_left_arrow_opacity, arrow)
         blit_arrow(279, 70, 90, upper_arrow_opacity, arrow)
         blit_arrow(492, 200, 0, right_arrow_opacity, arrow)
+        blit_arrow(279, 300, 90, super_arrow_opacity, rocket_arrow)
 
         x, y = pg.mouse.get_pos()  # Pegando as coordenadas do mouse
         # Movimentos em X
@@ -288,14 +296,24 @@ def game_loop():
             moving_right = False
             moving_left = True
             left_arrow_opacity = 100
+        elif y > 4 * win_size[1] / 5:
+            charge_timer += dt
+            if vertical_momentum in permitted_vm and time_to_use == 8.1:
+                player_rect.x += choice([-1.25, 1, -0.5, 0, 0.5, 1, 1.25])
+            if charge_timer > 1 and time_to_use > 8:  # Incrementar timer para uso e imagem de foguete na área
+                vertical_momentum = -12
+                charge_timer = time_to_use = 0
         else:
+            charge_timer = 0
             moving_right = moving_left = False
-            right_arrow_opacity = left_arrow_opacity = upper_arrow_opacity\
+            right_arrow_opacity = left_arrow_opacity = upper_arrow_opacity \
                 = up_right_arrow_opacity = up_left_arrow_opacity = 70
+
+        if vertical_momentum not in permitted_vm:
+            upper_arrow_opacity = 100
 
         # Movimentos em Y
         if (y < win_size[1] / 3) and (y > win_size[1] / 6) and air_timer < 8:
-            upper_arrow_opacity = 100
             if collisions['top']:
                 vertical_momentum = -1
             elif collisions['bottom']:
@@ -313,17 +331,25 @@ def game_loop():
             up_left_arrow_opacity = 70
 
         # Morte do personagem
-        if air_timer > 80:
+        if air_timer > 120:
             game_exit = True
 
         # Apurando eventos
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 game_exit = True
+            if event.type == pg.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    exit()
+
+        super_arrow_opacity = time_to_use * 10
 
         # Update da tela e FPS
         screen.blit(pg.transform.scale(display, win_size), (0, 0))
         pg.display.update()
+        time_to_use += dt
+        if time_to_use > 8:
+            time_to_use = 8.1
         dt = clock.tick(60) / 1000
 
 
