@@ -15,8 +15,6 @@ pg.display.set_caption('Rocket Wave')
 display = pg.Surface((600, 400))
 clock = pg.time.Clock()
 
-true_scroll = [0, 0]  # Variável para o seguir da câmera
-
 
 # Carregando o mapa
 def load_map(path):
@@ -134,6 +132,7 @@ def bullet_blit(image, this_list):
 def game_loop():
     # Variáveis do loop
     game_exit = moving_left = moving_right = False
+    true_scroll = [0, 0]
 
     # Variáveis físicas
     vertical_momentum = air_timer = speed_timer = charge_timer = dt = 0
@@ -148,8 +147,8 @@ def game_loop():
     # Variáveis das setas
     rocket_arrow = pg.image.load('Imagens//seta_foguete.png').convert_alpha()
     arrow = pg.image.load('Imagens//seta.png').convert_alpha()
-    arrow.set_colorkey((255, 255, 255))
 
+    # Variáveis da bala
     bullet = pg.image.load('Imagens/bullet.png')
     bullets = []
     shoot = False
@@ -309,7 +308,7 @@ def game_loop():
             charge_timer += dt
             if vertical_momentum in permitted_vm and time_to_use == 8.1:
                 player_rect.x += choice([-1.25, 1, -0.5, 0, 0.5, 1, 1.25])
-            if charge_timer > 1 and time_to_use > 8:  # Incrementar timer para uso e imagem de foguete na área
+            if charge_timer > 1 and time_to_use > 8:
                 vertical_momentum = -12
                 charge_timer = time_to_use = 0
         else:
@@ -317,9 +316,6 @@ def game_loop():
             moving_right = moving_left = False
             right_arrow_opacity = left_arrow_opacity = upper_arrow_opacity \
                 = up_right_arrow_opacity = up_left_arrow_opacity = 70
-
-        if vertical_momentum not in permitted_vm:
-            upper_arrow_opacity = 100
 
         # Movimentos em Y
         if (y < win_size[1] / 3) and (y > win_size[1] / 6) and air_timer < 8:
@@ -331,13 +327,16 @@ def game_loop():
         elif collisions['bottom']:
             upper_arrow_opacity = up_left_arrow_opacity = up_right_arrow_opacity = 70
 
-        # Analisando opacidade das setas diagonais
+        # Analisando opacidade das setas diagonais e verticais
         if upper_arrow_opacity == 100 and right_arrow_opacity == 100:
             up_right_arrow_opacity = 100
         elif upper_arrow_opacity == 100 and left_arrow_opacity == 100:
             up_left_arrow_opacity = 100
         else:
             up_left_arrow_opacity = 70
+        if vertical_momentum not in permitted_vm:
+            upper_arrow_opacity = 100
+        super_arrow_opacity = time_to_use * 10
 
         # Morte do personagem
         if air_timer > 120:
@@ -353,16 +352,14 @@ def game_loop():
                     pos_bullet_y = 200
                     shoot = True
 
+        # Tentando implementar tiros
         if shoot:
             pos_bullet_x += 5
-            bullet_pos = [pos_bullet_x, pos_bullet_y + player_movement[1]]
+            bullet_pos = [pos_bullet_x, pos_bullet_y]
             bullets.append(bullet_pos)
             if len(bullets) > 1:
                 bullets.remove(bullets[0])
-
         bullet_blit(bullet, bullets)
-
-        super_arrow_opacity = time_to_use * 10
 
         # Update da tela e FPS
         screen.blit(pg.transform.scale(display, win_size), (0, 0))
