@@ -125,6 +125,11 @@ def bg_moving(x_bg, bg_layer, h):
         display.blit(bg_layer, (rel_x, h))
 
 
+def bullet_blit(image, this_list):
+    for element in this_list:
+        display.blit(image, (element[0], element[1]))
+
+
 # Loop principal
 def game_loop():
     # Variáveis do loop
@@ -146,6 +151,10 @@ def game_loop():
     arrow.set_colorkey((255, 255, 255))
 
     bullet = pg.image.load('Imagens/bullet.png')
+    bullets = []
+    shoot = False
+    pos_bullet_x = 250
+    pos_bullet_y = 200
 
     # Variáveis do personagem
     player_rect = pg.Rect(100, 100, 25, 30)
@@ -340,7 +349,18 @@ def game_loop():
                 game_exit = True
             if event.type == pg.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    exit()
+                    pos_bullet_x = 250
+                    pos_bullet_y = 200
+                    shoot = True
+
+        if shoot:
+            pos_bullet_x += 5
+            bullet_pos = [pos_bullet_x, pos_bullet_y + player_movement[1]]
+            bullets.append(bullet_pos)
+            if len(bullets) > 1:
+                bullets.remove(bullets[0])
+
+        bullet_blit(bullet, bullets)
 
         super_arrow_opacity = time_to_use * 10
 
