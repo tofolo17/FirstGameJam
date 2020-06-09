@@ -63,10 +63,10 @@ def game_loop():
 
     # Objetos do fundo
     x_building1 = x_building2 = x_building3 = 0
-    background = pg.image.load("Imagens//bg.png")
-    buildings1 = pg.image.load("Imagens//layer1.png")
-    buildings2 = pg.image.load("Imagens//layer2.png")
-    buildings3 = pg.image.load("Imagens//layer3.png")
+    background = pg.image.load('Imagens/bg.png')
+    buildings1 = pg.image.load('Imagens/layer1.png')
+    buildings2 = pg.image.load('Imagens/layer2.png')
+    buildings3 = pg.image.load('Imagens/layer3.png')
     stars = []
     for n in range(45):
         stars.append([randint(0, 600), randint(0, 140)])
@@ -125,7 +125,7 @@ def game_loop():
 
         # Movimento do personagem
         player_movement = [0, 0]
-        if (speed_timer > 0.8) and vertical_momentum in permitted_vm:
+        if speed_timer > 0.8 and vertical_momentum in permitted_vm:
             speed_boost = 3
         else:
             speed_boost = 2
@@ -158,8 +158,8 @@ def game_loop():
 
         player_rect, collisions = move(player_rect, player_movement, tile_rect)  # Relacionando o jogador e o mapa
 
-        un_bug_collided_bg(x_building1, x_building2, x_building3, collisions['right'], collisions['left'])  # Não
-        # deixa a tela se mexer quando colidido com a parede
+        # Não deixa a tela se mexer quando colidido com a parede
+        un_bug_collided_bg(x_building1, x_building2, x_building3, collisions['right'], collisions['left'])
 
         # Mantém o personagem colidindo com o chão
         if collisions['bottom']:
@@ -179,7 +179,7 @@ def game_loop():
                      (player_rect.x + scroll[0], player_rect.y + scroll[1]))
 
         # Colocando as setas na tela
-        rocket_arrow = pg.image.load(f'Imagens//superarrow_{img_arrow_n}.png').convert_alpha()
+        rocket_arrow = pg.image.load(f'Imagens/superarrow_{img_arrow_n}.png').convert_alpha()
         blit_arrow(50, 200, 180, left_arrow_opacity, arrow, display)
         blit_arrow(482, 70, 45, up_right_arrow_opacity, arrow, display)
         blit_arrow(50, 70, 135, up_left_arrow_opacity, arrow, display)
@@ -199,18 +199,17 @@ def game_loop():
             left_arrow_opacity = 100
         elif y > 4 * win_size[1] / 5:
             charge_timer += dt
-            super_arrow_opacity = 100
+            super_arrow_opacity = 150
             if vertical_momentum in permitted_vm and time_to_use >= 8:
                 player_rect.x += choice([-1.25, 1, -0.5, 0, 0.5, 1, 1.25])
-            if charge_timer > 1 and time_to_use >= 8:
+            if charge_timer > 1:
                 vertical_momentum = -12
                 charge_timer = time_to_use = 0
         else:
+            charge_timer = 0
             moving_right = moving_left = False
             right_arrow_opacity = left_arrow_opacity = upper_arrow_opacity = up_right_arrow_opacity = \
                 up_left_arrow_opacity = super_arrow_opacity = 70
-
-        print(charge_timer)
 
         # Movimentos em Y
         if (y < win_size[1] / 3) and (y > win_size[1] / 6) and air_timer < 8:
@@ -223,14 +222,14 @@ def game_loop():
             upper_arrow_opacity = up_left_arrow_opacity = up_right_arrow_opacity = 70
 
         # Analisando opacidade das setas diagonais e verticais
+        if vertical_momentum not in permitted_vm:
+            upper_arrow_opacity = 100
         if upper_arrow_opacity == 100 and right_arrow_opacity == 100:
             up_right_arrow_opacity = 100
         elif upper_arrow_opacity == 100 and left_arrow_opacity == 100:
             up_left_arrow_opacity = 100
         else:
             up_left_arrow_opacity = 70
-        if vertical_momentum not in permitted_vm:
-            upper_arrow_opacity = 100
         if time_to_use >= 8:
             time_to_use = 8
             img_arrow_n = 5
