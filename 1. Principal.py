@@ -61,6 +61,8 @@ def game_loop():
     player_flip = False
     player_frame = 0
 
+    h_b1 = 210
+
     # Objetos do fundo
     x_building1 = x_building2 = x_building3 = 0
     background = pg.image.load('Imagens/bg.png')
@@ -84,17 +86,17 @@ def game_loop():
         display.fill((0, 0, 0))  # Preenchendo a tela com algo
         display.blit(background, (0, 0))  # Fundo gradiente
 
-        # Movimentação das construções
-        bg_moving(x_building3, buildings3, 165, display, win_size[0])
-        bg_moving(x_building2, buildings2, 170, display, win_size[0])
-        bg_moving(x_building1, buildings1, 210, display, win_size[0])
-
         # Câmera
         true_scroll[0] -= ((player_rect.x + true_scroll[0]) - 230) / 12
         true_scroll[1] -= ((player_rect.y + true_scroll[1]) - 250) / 12
         scroll = true_scroll.copy()
         scroll[0] = int(true_scroll[0])
         scroll[1] = int(true_scroll[1])
+
+        # Movimentação das construções
+        bg_moving(x_building3, buildings3, 140 + scroll[1]/8, display, win_size[0])
+        bg_moving(x_building2, buildings2, 140 + scroll[1]/6, display, win_size[0])
+        bg_moving(x_building1, buildings1, 165 + scroll[1]/4, display, win_size[0])
 
         # Adiciona as estrelas ao céu
         for star in stars:
@@ -164,6 +166,7 @@ def game_loop():
         # Mantém o personagem colidindo com o chão
         if collisions['bottom']:
             air_timer = vertical_momentum = 0
+            h_b1 = 210
         else:
             air_timer += 1
             if air_timer > 5:
