@@ -37,9 +37,15 @@ animation_database = {'idle': load_animation('Player Animations/idle', [7, 7, 7,
 
 # Loop principal
 def game_loop():
+
     # Variáveis do loop
     game_exit = moving_left = moving_right = False
     true_scroll = [0, 0]
+
+    # Variáveis da trocação
+    shoot = False
+    shoot_y = shoot_x = 0
+    bullets = []
 
     # Variáveis físicas
     vertical_momentum = air_timer = speed_timer = charge_timer = dt = 0
@@ -243,7 +249,21 @@ def game_loop():
                 game_exit = True
             if event.type == pg.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    exit()
+                    shoot_y = player_rect.y
+                    shoot_x = player_rect.x
+                    shoot = True
+
+        # Balas
+        if shoot:
+            bullets.append([shoot_x, shoot_y])
+            shoot = False
+        for bullet in bullets:
+            bullet[0] += 3
+            display.blit(arrow, (bullet[0] + scroll[0], bullet[1] + scroll[1]))
+            if bullet[0] > 600 + arrow.get_width():
+                bullets.remove(bullet)
+
+        print(bullets)
 
         # Morte do personagem
         if air_timer > 120:
