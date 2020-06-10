@@ -61,8 +61,6 @@ def game_loop():
     player_flip = False
     player_frame = 0
 
-    h_b1 = 210
-
     # Objetos do fundo
     x_building1 = x_building2 = x_building3 = 0
     background = pg.image.load('Imagens/bg.png')
@@ -166,7 +164,6 @@ def game_loop():
         # Mantém o personagem colidindo com o chão
         if collisions['bottom']:
             air_timer = vertical_momentum = 0
-            h_b1 = 210
         else:
             air_timer += 1
             if air_timer > 5:
