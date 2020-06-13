@@ -45,6 +45,7 @@ def game_loop():
     shoot = False
     shoot_y = shoot_x = 0
     bullets, shoot_pos = [], []
+    bullet_img = pg.image.load('Imagens/bullet.png')
 
     # Variáveis físicas
     vertical_momentum = air_timer = speed_timer = charge_timer = dt = 0
@@ -260,12 +261,15 @@ def game_loop():
         for bullet in bullets:
             pos = bullets.index(bullet)
             if not shoot_pos[pos][0]:
-                bullet[0] += 3
+                bullet[0] += 15
+                x_start_shoot = 10
                 angle = 0
             else:
-                bullet[0] -= 3
+                bullet[0] -= 15
+                x_start_shoot = 0
                 angle = 180
-            display.blit(pg.transform.rotate(arrow, angle), (bullet[0] + scroll[0], bullet[1] + scroll[1]))
+            display.blit(pg.transform.rotate(bullet_img, angle), (bullet[0] + x_start_shoot + scroll[0], bullet[1] + 14
+                                                                  + scroll[1]))
             if bullet[0] > player_rect.x + 300 + arrow.get_width() or bullet[0] < player_rect.x \
                     - 300 - arrow.get_width():
                 bullets.remove(bullet)
