@@ -37,7 +37,6 @@ animation_database = {'idle': load_animation('Player Animations/idle', [7, 7, 7,
 
 # Loop principal
 def game_loop():
-
     # Variáveis do loop
     game_exit = moving_left = moving_right = False
     true_scroll = [0, 0]
@@ -45,7 +44,7 @@ def game_loop():
     # Variáveis da trocação
     shoot = False
     shoot_y = shoot_x = 0
-    bullets = []
+    bullets, shoot_pos = [], []
 
     # Variáveis físicas
     vertical_momentum = air_timer = speed_timer = charge_timer = dt = 0
@@ -98,9 +97,9 @@ def game_loop():
         scroll[1] = int(true_scroll[1])
 
         # Movimentação das construções
-        bg_moving(x_building3, buildings3, 140 + scroll[1]/8, display, win_size[0])
-        bg_moving(x_building2, buildings2, 140 + scroll[1]/6, display, win_size[0])
-        bg_moving(x_building1, buildings1, 165 + scroll[1]/4, display, win_size[0])
+        bg_moving(x_building3, buildings3, 140 + scroll[1] / 8, display, win_size[0])
+        bg_moving(x_building2, buildings2, 140 + scroll[1] / 6, display, win_size[0])
+        bg_moving(x_building1, buildings1, 165 + scroll[1] / 4, display, win_size[0])
 
         # Adiciona as estrelas ao céu
         for star in stars:
@@ -256,14 +255,21 @@ def game_loop():
         # Balas
         if shoot:
             bullets.append([shoot_x, shoot_y])
+            shoot_pos.append([player_flip])
             shoot = False
         for bullet in bullets:
-            bullet[0] += 3
-            display.blit(arrow, (bullet[0] + scroll[0], bullet[1] + scroll[1]))
-            if bullet[0] > player_rect.x + 300 + arrow.get_width():
+            pos = bullets.index(bullet)
+            if not shoot_pos[pos][0]:
+                bullet[0] += 3
+                angle = 0
+            else:
+                bullet[0] -= 3
+                angle = 180
+            display.blit(pg.transform.rotate(arrow, angle), (bullet[0] + scroll[0], bullet[1] + scroll[1]))
+            if bullet[0] > player_rect.x + 300 + arrow.get_width() or bullet[0] < player_rect.x \
+                    - 300 - arrow.get_width():
                 bullets.remove(bullet)
-
-        print(bullets)
+                shoot_pos.remove(shoot_pos[pos])
 
         # Morte do personagem
         if air_timer > 120:
