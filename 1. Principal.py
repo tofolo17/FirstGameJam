@@ -260,7 +260,7 @@ def game_loop():
         for bullet in bullets:
             bullet[0] += 3
             display.blit(arrow, (bullet[0] + scroll[0], bullet[1] + scroll[1]))
-            if bullet[0] > 600 + arrow.get_width():
+            if bullet[0] > player_rect.x + 300 + arrow.get_width():
                 bullets.remove(bullet)
 
         print(bullets)
