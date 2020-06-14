@@ -314,6 +314,7 @@ def game_loop():
                     bullet[0] < player_rect.x - 300 - arrow.get_width():
                 bullets.remove(bullet)
                 shoot_pos.remove(shoot_pos[pos])
+        screen_text(f'{30 - n_of_bullets} / 30', 540, 370, (255, 255, 255), 20, display)
 
         # Morte do personagem
         if air_timer > 120:

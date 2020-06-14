@@ -107,3 +107,10 @@ def change_img_conditional(component, values: list, def_result):
             image_n = def_result + i
             return image_n
         i += 1
+
+
+def screen_text(text, x_coord, y_coord, color, size, window, r=0):
+    msg = pg.font.SysFont('verdana', size - 10).render(str(text), True, color)
+    window.blit(msg, msg.get_rect(center=(int(x_coord), int(y_coord))))
+    if r:
+        return msg.get_rect(center=(x_coord, y_coord))
