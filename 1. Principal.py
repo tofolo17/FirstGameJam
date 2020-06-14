@@ -10,7 +10,7 @@ os.environ['SDL_VIDEO_CENTERED'] = '1'  # Centralizando
 pg.init()  # Inicializando o Pygame
 
 # Tamanho da tela e título
-win_size = [600, 400]  # pg.display.Info().current_w - 5, pg.display.Info().current_h - 40
+win_size = [900, 600]  # pg.display.Info().current_w - 5, pg.display.Info().current_h - 40
 screen = pg.display.set_mode(size=win_size)
 pg.display.set_caption('Rocket Wave')
 display = pg.Surface((600, 400))
@@ -32,8 +32,8 @@ antenna = pg.image.load('Imagens/block_10.png')
 # Dicionário que guarda as informações sobre as animações
 animation_database = {'idle': load_animation('Player Animations/idle', [7, 7, 7, 7]),
                       'run': load_animation('Player Animations/run', [7, 7, 7, 7, 7, 7, 7, 7]),
-                      'jump': load_animation('Player Animations/jump', [7, 7, 7, 7, 7, 7, 7, 7, 7]),
-                      'shoot': load_animation('Player Animations/shoot', [7, 7, 7, 7])}
+                      'jump': load_animation('Player Animations/jump', [7, 7, 7, 7, 7, 7, 7]),
+                      'shoot': load_animation('Player Animations/shoot', [3, 3, 3, 3])}
 
 
 # Loop principal
@@ -84,6 +84,8 @@ def game_loop():
             display.blit(block_name, (x * 16 + scroll[0] - corrector_x, y * 16 + scroll[1] + corrector_y))
             if not collide:
                 tile_rect.append(pg.Rect(x * 16, y * 16, w, h))
+
+    image_offset = 0
 
     # Enquanto o jogo estiver aberto...
     while not game_exit:
@@ -194,7 +196,7 @@ def game_loop():
         player_img_id = animation_database[player_action][player_frame]
         player_img = animation_frames[player_img_id]
         display.blit(pg.transform.flip(player_img, player_flip, False),
-                     (player_rect.x + scroll[0], player_rect.y + scroll[1]))
+                     (player_rect.x - player_img.get_width()/2 + scroll[0] + image_offset, player_rect.y + scroll[1]))
 
         # Colocando as setas na tela
         rocket_arrow = pg.image.load(f'Imagens/superarrow_{img_arrow_n}.png').convert_alpha()
@@ -215,16 +217,7 @@ def game_loop():
             moving_right = False
             moving_left = True
             left_arrow_opacity = 100
-        elif y > 4 * win_size[1] / 5:
-            charge_timer += dt
-            super_arrow_opacity = 150
-            if vertical_momentum in permitted_vm and time_to_use >= 8:
-                player_rect.x += choice([-1.25, 1, -0.5, 0, 0.5, 1, 1.25])
-            if charge_timer > 1:
-                vertical_momentum = -12
-                charge_timer = time_to_use = 0
         else:
-            charge_timer = 0
             moving_right = moving_left = False
             right_arrow_opacity = left_arrow_opacity = upper_arrow_opacity = up_right_arrow_opacity = \
                 up_left_arrow_opacity = super_arrow_opacity = 70
@@ -238,6 +231,16 @@ def game_loop():
                 collisions['top'] = True
         elif collisions['bottom']:
             upper_arrow_opacity = up_left_arrow_opacity = up_right_arrow_opacity = 70
+        if y > 4 * win_size[1] / 5:
+            charge_timer += dt
+            if vertical_momentum in permitted_vm and time_to_use >= 8:
+                super_arrow_opacity = 150
+                player_rect.x += choice([-1.25, 1, -0.5, 0, 0.5, 1, 1.25])
+            if charge_timer > 1:
+                vertical_momentum = -12
+                charge_timer = time_to_use = 0
+        else:
+            charge_timer = 0
 
         # Analisando opacidade das setas diagonais e verticais
         if vertical_momentum not in permitted_vm:
@@ -261,9 +264,14 @@ def game_loop():
                 game_exit = True
             if event.type == pg.MOUSEBUTTONDOWN:
                 if event.button == 1:
+                    if player_flip:
+                        image_offset = -3
+                    else:
+                        image_offset = 2
                     shoot = True
             if event.type == pg.MOUSEBUTTONUP:
                 if event.button == 1:
+                    image_offset = 0
                     shoot = False
 
         time_to_recharge -= dt  # Tempo para conseguir atirar
