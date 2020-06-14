@@ -39,7 +39,7 @@ animation_database = {'idle': load_animation('Player Animations/idle', [7, 7, 7,
 # Loop principal
 def game_loop():
     # Variáveis do loop
-    game_exit = moving_left = moving_right = moving = False
+    game_exit = moving_left = moving_right = False
     true_scroll = [0, 0]
 
     # Variáveis da trocação
@@ -162,10 +162,6 @@ def game_loop():
 
         # Animações baseadas no movimento
         if moving_left or moving_right:
-            moving = True
-        else:
-            moving = False
-        if moving:
             if shoot and time_to_recharge < 0:
                 player_action, player_frame = change_action(player_action, player_frame, 'shoot')
             elif air_timer > 5:
@@ -270,7 +266,7 @@ def game_loop():
                 if event.button == 1:
                     shoot = False
 
-        time_to_recharge -= dt
+        time_to_recharge -= dt  # Tempo para conseguir atirar
         # Balas
         if shoot and time_to_recharge < 0:
             player_movement[0] = 100
@@ -298,10 +294,10 @@ def game_loop():
                 bullet[0] -= 15
                 x_start_shoot = 0
                 angle = 180
-            display.blit(pg.transform.rotate(bullet_img, angle), (bullet[0] + x_start_shoot + scroll[0], bullet[1] + 14
-                                                                  + scroll[1]))
-            if bullet[0] > player_rect.x + 300 + arrow.get_width() or bullet[0] < player_rect.x \
-                    - 300 - arrow.get_width():
+            display.blit(pg.transform.rotate(bullet_img, angle),
+                         (bullet[0] + x_start_shoot + scroll[0], bullet[1] + 14 + scroll[1]))
+            if bullet[0] > player_rect.x + 300 + arrow.get_width() or \
+                    bullet[0] < player_rect.x - 300 - arrow.get_width():
                 bullets.remove(bullet)
                 shoot_pos.remove(shoot_pos[pos])
 
