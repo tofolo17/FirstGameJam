@@ -32,19 +32,20 @@ antenna = pg.image.load('Imagens/block_10.png')
 # Dicionário que guarda as informações sobre as animações
 animation_database = {'idle': load_animation('Player Animations/idle', [7, 7, 7, 7]),
                       'run': load_animation('Player Animations/run', [7, 7, 7, 7, 7, 7, 7, 7]),
-                      'jump': load_animation('Player Animations/jump', [7, 7, 7, 7, 7, 7, 7, 7, 7])}
+                      'jump': load_animation('Player Animations/jump', [7, 7, 7, 7, 7, 7, 7, 7, 7]),
+                      'shoot': load_animation('Player Animations/shoot', [7, 7, 7, 7])}
 
 
 # Loop principal
 def game_loop():
     # Variáveis do loop
-    game_exit = moving_left = moving_right = False
+    game_exit = moving_left = moving_right = moving = False
     true_scroll = [0, 0]
 
     # Variáveis da trocação
     shoot = False
-    shoot_y = shoot_x = 0
     bullets, shoot_pos = [], []
+    n_of_bullets = time_to_shoot = time_to_recharge = 0
     bullet_img = pg.image.load('Imagens/bullet.png')
 
     # Variáveis físicas
@@ -136,7 +137,6 @@ def game_loop():
         else:
             speed_boost = 2
         if moving_right:
-            player_action, player_frame = change_action(player_action, player_frame, 'run')
             player_movement[0] += speed_boost
             player_flip = False
             speed_timer += dt
@@ -145,7 +145,6 @@ def game_loop():
             x_building2 -= 0.3
             x_building3 -= 0.15
         elif moving_left:
-            player_action, player_frame = change_action(player_action, player_frame, 'run')
             player_movement[0] -= speed_boost
             player_flip = True
             speed_timer += dt
@@ -154,13 +153,32 @@ def game_loop():
             x_building2 += 0.3
             x_building3 += 0.15
         else:
-            player_action, player_frame = change_action(player_action, player_frame, 'idle')
             stars_speed = 0.3
             speed_timer = 0
         player_movement[1] += vertical_momentum
         vertical_momentum += 0.3
         if vertical_momentum > 7:
             vertical_momentum = 7
+
+        # Animações baseadas no movimento
+        if moving_left or moving_right:
+            moving = True
+        else:
+            moving = False
+        if moving:
+            if shoot and time_to_recharge < 0:
+                player_action, player_frame = change_action(player_action, player_frame, 'shoot')
+            elif air_timer > 5:
+                player_action, player_frame = change_action(player_action, player_frame, 'jump')
+            else:
+                player_action, player_frame = change_action(player_action, player_frame, 'run')
+        else:
+            if shoot and time_to_recharge < 0:
+                player_action, player_frame = change_action(player_action, player_frame, 'shoot')
+            elif air_timer > 5:
+                player_action, player_frame = change_action(player_action, player_frame, 'jump')
+            else:
+                player_action, player_frame = change_action(player_action, player_frame, 'idle')
 
         player_rect, collisions = move(player_rect, player_movement, tile_rect)  # Relacionando o jogador e o mapa
 
@@ -172,8 +190,6 @@ def game_loop():
             air_timer = vertical_momentum = 0
         else:
             air_timer += 1
-            if air_timer > 5:
-                player_action, player_frame = change_action(player_action, player_frame, 'jump')
 
         # Transição entre os frames armazenados
         player_frame += 1
@@ -249,15 +265,29 @@ def game_loop():
                 game_exit = True
             if event.type == pg.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    shoot_y = player_rect.y
-                    shoot_x = player_rect.x
                     shoot = True
+            if event.type == pg.MOUSEBUTTONUP:
+                if event.button == 1:
+                    shoot = False
 
+        time_to_recharge -= dt
         # Balas
-        if shoot:
-            bullets.append([shoot_x, shoot_y])
-            shoot_pos.append([player_flip])
-            shoot = False
+        if shoot and time_to_recharge < 0:
+            player_movement[0] = 100
+            time_to_shoot += dt
+            if len(bullets) == 0:
+                initial_bullet = 0
+            else:
+                initial_bullet = 0.2
+            while n_of_bullets <= 30 and time_to_shoot > initial_bullet:
+                bullets.append([player_rect.x, player_rect.y])
+                shoot_pos.append([player_flip])
+                time_to_shoot = 0
+                n_of_bullets += 1
+                if n_of_bullets > 30:
+                    time_to_recharge = 2
+                    n_of_bullets = 0
+                    shoot = False
         for bullet in bullets:
             pos = bullets.index(bullet)
             if not shoot_pos[pos][0]:
