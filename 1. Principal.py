@@ -33,7 +33,9 @@ antenna = pg.image.load('Imagens/block_10.png')
 animation_database = {'idle': load_animation('Player Animations/idle', [7, 7, 7, 7]),
                       'run': load_animation('Player Animations/run', [7, 7, 7, 7, 7, 7, 7, 7]),
                       'jump': load_animation('Player Animations/jump', [7, 7, 7, 7, 7, 7, 7]),
-                      'shoot': load_animation('Player Animations/shoot', [3, 3, 3, 3])}
+                      'shoot': load_animation('Player Animations/shoot', [3, 3, 3, 3]),
+                      'walkshoot': load_animation('Player Animations/walkshoot', [4, 4, 4, 4, 4, 4, 4, 4]),
+                      'jumpshoot': load_animation('Player Animations/jumpshoot', [3, 3, 3, 3])}
 
 
 # Loop principal
@@ -64,9 +66,9 @@ def game_loop():
 
     # Variáveis do personagem
     player_rect = pg.Rect(100, 100, 25, 30)
+    player_frame = image_offset = 0
     player_action = 'idle'
     player_flip = False
-    player_frame = 0
 
     # Objetos do fundo
     x_building1 = x_building2 = x_building3 = 0
@@ -84,8 +86,6 @@ def game_loop():
             display.blit(block_name, (x * 16 + scroll[0] - corrector_x, y * 16 + scroll[1] + corrector_y))
             if not collide:
                 tile_rect.append(pg.Rect(x * 16, y * 16, w, h))
-
-    image_offset = 0
 
     # Enquanto o jogo estiver aberto...
     while not game_exit:
@@ -165,14 +165,20 @@ def game_loop():
         # Animações baseadas no movimento
         if moving_left or moving_right:
             if shoot and time_to_recharge < 0:
-                player_action, player_frame = change_action(player_action, player_frame, 'shoot')
+                if air_timer <= 5:
+                    player_action, player_frame = change_action(player_action, player_frame, 'walkshoot')
+                else:
+                    player_action, player_frame = change_action(player_action, player_frame, 'jumpshoot')
             elif air_timer > 5:
                 player_action, player_frame = change_action(player_action, player_frame, 'jump')
             else:
                 player_action, player_frame = change_action(player_action, player_frame, 'run')
         else:
             if shoot and time_to_recharge < 0:
-                player_action, player_frame = change_action(player_action, player_frame, 'shoot')
+                if air_timer <= 5:
+                    player_action, player_frame = change_action(player_action, player_frame, 'shoot')
+                else:
+                    player_action, player_frame = change_action(player_action, player_frame, 'jumpshoot')
             elif air_timer > 5:
                 player_action, player_frame = change_action(player_action, player_frame, 'jump')
             else:
