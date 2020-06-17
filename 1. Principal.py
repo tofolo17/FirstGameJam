@@ -10,7 +10,7 @@ os.environ['SDL_VIDEO_CENTERED'] = '1'  # Centralizando
 pg.init()  # Inicializando o Pygame
 
 # Tamanho da tela e título
-win_size = [900, 600]  # pg.display.Info().current_w - 5, pg.display.Info().current_h - 40
+win_size = [pg.display.Info().current_w - 5, pg.display.Info().current_h - 40]
 screen = pg.display.set_mode(size=win_size)
 pg.display.set_caption('Rocket Wave')
 display = pg.Surface((600, 400))
@@ -31,12 +31,12 @@ antenna = pg.image.load('Imagens/block_10.png')
 
 # Dicionário que guarda as informações sobre as animações
 animation_database = {'idle': load_animation('Player Animations/idle', [7, 7, 7, 7]),
-                      'run': load_animation('Player Animations/run', [7, 7, 7, 7, 7, 7, 7, 7]),
-                      'jump': load_animation('Player Animations/jump', [7, 7, 7, 7, 7, 7, 7]),
-                      'shoot': load_animation('Player Animations/shoot', [3, 3, 3, 3]),
+                      'run': load_animation('Player Animations/run', [5, 5, 5, 5, 5, 5, 5, 5]),
+                      'jump': load_animation('Player Animations/jump', [7, 7]),
+                      'shoot': load_animation('Player Animations/shoot', [4, 4, 4, 4]),
                       'walkshoot': load_animation('Player Animations/walkshoot', [4, 4, 4, 4, 4, 4, 4, 4]),
-                      'jumpshoot': load_animation('Player Animations/jumpshoot', [3, 3, 3, 3]),
-                      'superjump': load_animation('Player Animations/superjump,', [7, 7, 7, 7, 7])}
+                      'jumpshoot': load_animation('Player Animations/jumpshoot', [4, 4, 4, 4]),
+                      'superjump': load_animation('Player Animations/superjump', [7, 7, 7, 7])}
 
 
 # Loop principal
@@ -184,8 +184,10 @@ def game_loop():
                 else:
                     player_action, player_frame = change_action(player_action, player_frame, 'jumpshoot')
             elif air_timer > 5:
-
-                player_action, player_frame = change_action(player_action, player_frame, 'jump')
+                if not flying:
+                    player_action, player_frame = change_action(player_action, player_frame, 'jump')
+                else:
+                    player_action, player_frame = change_action(player_action, player_frame, 'superjump')
             else:
                 player_action, player_frame = change_action(player_action, player_frame, 'idle')
 
@@ -276,7 +278,7 @@ def game_loop():
             if event.type == pg.QUIT:
                 game_exit = True
             if event.type == pg.MOUSEBUTTONDOWN:
-                if event.button == 1:
+                if event.button == 1 and time_to_recharge < 0:
                     if player_flip:
                         image_offset = -3
                     else:
@@ -295,7 +297,7 @@ def game_loop():
             if len(bullets) == 0:
                 initial_bullet = 0
             else:
-                initial_bullet = 0.2
+                initial_bullet = 0.1
             while n_of_bullets <= 30 and time_to_shoot > initial_bullet:
                 bullets.append([player_rect.x, player_rect.y])
                 shoot_pos.append([player_flip])
@@ -303,17 +305,16 @@ def game_loop():
                 n_of_bullets += 1
                 if n_of_bullets > 30:
                     time_to_recharge = 2
-                    n_of_bullets = 0
-                    shoot = False
+                    n_of_bullets = image_offset = 0
         for bullet in bullets:
             pos = bullets.index(bullet)
             if not shoot_pos[pos][0]:
                 bullet[0] += 15
-                x_start_shoot = 10
+                x_start_shoot = 0
                 angle = 0
             else:
                 bullet[0] -= 15
-                x_start_shoot = 0
+                x_start_shoot = -5
                 angle = 180
             display.blit(pg.transform.rotate(bullet_img, angle),
                          (bullet[0] + x_start_shoot + scroll[0], bullet[1] + 14 + scroll[1]))

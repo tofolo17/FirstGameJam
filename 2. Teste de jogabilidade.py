@@ -10,7 +10,7 @@ os.environ['SDL_VIDEO_CENTERED'] = '1'  # Centralizando
 pg.init()  # Inicializando o Pygame
 
 # Tamanho da tela e título
-win_size = [600, 400]  # pg.display.Info().current_w - 5, pg.display.Info().current_h - 40
+win_size = [900, 600]  # pg.display.Info().current_w - 5, pg.display.Info().current_h - 40
 screen = pg.display.set_mode(size=win_size)
 pg.display.set_caption('Rocket Wave')
 display = pg.Surface((600, 400))
@@ -32,7 +32,10 @@ antenna = pg.image.load('Imagens/block_10.png')
 # Dicionário que guarda as informações sobre as animações
 animation_database = {'idle': load_animation('Player Animations/idle', [7, 7, 7, 7]),
                       'run': load_animation('Player Animations/run', [7, 7, 7, 7, 7, 7, 7, 7]),
-                      'jump': load_animation('Player Animations/jump', [7, 7, 7, 7, 7, 7, 7, 7, 7])}
+                      'jump': load_animation('Player Animations/jump', [7, 7]),
+                      'shoot': load_animation('Player Animations/shoot', [3, 3, 3, 3]),
+                      'walkshoot': load_animation('Player Animations/walkshoot', [4, 4, 4, 4, 4, 4, 4, 4]),
+                      'jumpshoot': load_animation('Player Animations/jumpshoot', [3, 3, 3, 3])}
 
 
 # Loop principal
@@ -40,6 +43,12 @@ def game_loop():
     # Variáveis do loop
     game_exit = moving_left = moving_right = False
     true_scroll = [0, 0]
+
+    # Variáveis da trocação
+    shoot = False
+    bullets, shoot_pos = [], []
+    n_of_bullets = time_to_shoot = time_to_recharge = 0
+    bullet_img = pg.image.load('Imagens/bullet.png')
 
     # Variáveis físicas
     vertical_momentum = air_timer = speed_timer = charge_timer = dt = 0
@@ -57,9 +66,9 @@ def game_loop():
 
     # Variáveis do personagem
     player_rect = pg.Rect(100, 100, 25, 30)
+    player_frame = image_offset = 0
     player_action = 'idle'
     player_flip = False
-    player_frame = 0
 
     # Objetos do fundo
     x_building1 = x_building2 = x_building3 = 0
@@ -84,17 +93,17 @@ def game_loop():
         display.fill((0, 0, 0))  # Preenchendo a tela com algo
         display.blit(background, (0, 0))  # Fundo gradiente
 
-        # Movimentação das construções
-        bg_moving(x_building3, buildings3, 165, display, win_size[0])
-        bg_moving(x_building2, buildings2, 170, display, win_size[0])
-        bg_moving(x_building1, buildings1, 210, display, win_size[0])
-
         # Câmera
         true_scroll[0] -= ((player_rect.x + true_scroll[0]) - 230) / 12
         true_scroll[1] -= ((player_rect.y + true_scroll[1]) - 250) / 12
         scroll = true_scroll.copy()
         scroll[0] = int(true_scroll[0])
         scroll[1] = int(true_scroll[1])
+
+        # Movimentação das construções
+        bg_moving(x_building3, buildings3, 140 + scroll[1] / 8, display, win_size[0])
+        bg_moving(x_building2, buildings2, 140 + scroll[1] / 6, display, win_size[0])
+        bg_moving(x_building1, buildings1, 165 + scroll[1] / 4, display, win_size[0])
 
         # Adiciona as estrelas ao céu
         for star in stars:
@@ -130,7 +139,6 @@ def game_loop():
         else:
             speed_boost = 2
         if moving_right:
-            player_action, player_frame = change_action(player_action, player_frame, 'run')
             player_movement[0] += speed_boost
             player_flip = False
             speed_timer += dt
@@ -139,7 +147,6 @@ def game_loop():
             x_building2 -= 0.3
             x_building3 -= 0.15
         elif moving_left:
-            player_action, player_frame = change_action(player_action, player_frame, 'run')
             player_movement[0] -= speed_boost
             player_flip = True
             speed_timer += dt
@@ -148,13 +155,34 @@ def game_loop():
             x_building2 += 0.3
             x_building3 += 0.15
         else:
-            player_action, player_frame = change_action(player_action, player_frame, 'idle')
             stars_speed = 0.3
             speed_timer = 0
         player_movement[1] += vertical_momentum
         vertical_momentum += 0.3
         if vertical_momentum > 7:
             vertical_momentum = 7
+
+        # Animações baseadas no movimento
+        if moving_left or moving_right:
+            if shoot and time_to_recharge < 0:
+                if air_timer <= 5:
+                    player_action, player_frame = change_action(player_action, player_frame, 'walkshoot')
+                else:
+                    player_action, player_frame = change_action(player_action, player_frame, 'jumpshoot')
+            elif air_timer > 5:
+                player_action, player_frame = change_action(player_action, player_frame, 'jump')
+            else:
+                player_action, player_frame = change_action(player_action, player_frame, 'run')
+        else:
+            if shoot and time_to_recharge < 0:
+                if air_timer <= 5:
+                    player_action, player_frame = change_action(player_action, player_frame, 'shoot')
+                else:
+                    player_action, player_frame = change_action(player_action, player_frame, 'jumpshoot')
+            elif air_timer > 5:
+                player_action, player_frame = change_action(player_action, player_frame, 'jump')
+            else:
+                player_action, player_frame = change_action(player_action, player_frame, 'idle')
 
         player_rect, collisions = move(player_rect, player_movement, tile_rect)  # Relacionando o jogador e o mapa
 
@@ -166,8 +194,6 @@ def game_loop():
             air_timer = vertical_momentum = 0
         else:
             air_timer += 1
-            if air_timer > 5:
-                player_action, player_frame = change_action(player_action, player_frame, 'jump')
 
         # Transição entre os frames armazenados
         player_frame += 1
@@ -176,7 +202,7 @@ def game_loop():
         player_img_id = animation_database[player_action][player_frame]
         player_img = animation_frames[player_img_id]
         display.blit(pg.transform.flip(player_img, player_flip, False),
-                     (player_rect.x + scroll[0], player_rect.y + scroll[1]))
+                     (player_rect.x - player_img.get_width()/2 + scroll[0] + image_offset, player_rect.y + scroll[1]))
 
         # Colocando as setas na tela
         rocket_arrow = pg.image.load(f'Imagens/superarrow_{img_arrow_n}.png').convert_alpha()
@@ -197,23 +223,13 @@ def game_loop():
             moving_right = False
             moving_left = True
             left_arrow_opacity = 100
-        elif y > 4 * win_size[1] / 5:
-            charge_timer += dt
-            super_arrow_opacity = 150
-            if vertical_momentum in permitted_vm and time_to_use >= 8:
-                player_rect.x += choice([-1.25, 1, -0.5, 0, 0.5, 1, 1.25])
-            if charge_timer > 1:
-                vertical_momentum = -12
-                charge_timer = time_to_use = 0
         else:
-            charge_timer = 0
             moving_right = moving_left = False
             right_arrow_opacity = left_arrow_opacity = upper_arrow_opacity = up_right_arrow_opacity = \
                 up_left_arrow_opacity = super_arrow_opacity = 70
 
         # Movimentos em Y
         if (y < win_size[1] / 3) and (y > win_size[1] / 6) and air_timer < 8:
-            upper_arrow_opacity = 100
             if collisions['top']:
                 vertical_momentum = -1
             elif collisions['bottom']:
@@ -221,8 +237,20 @@ def game_loop():
                 collisions['top'] = True
         elif collisions['bottom']:
             upper_arrow_opacity = up_left_arrow_opacity = up_right_arrow_opacity = 70
+        if y > 4 * win_size[1] / 5:
+            charge_timer += dt
+            if vertical_momentum in permitted_vm and time_to_use >= 8:
+                super_arrow_opacity = 150
+                player_rect.x += choice([-1.25, 1, -0.5, 0, 0.5, 1, 1.25])
+            if charge_timer > 1:
+                vertical_momentum = -12
+                charge_timer = time_to_use = 0
+        else:
+            charge_timer = 0
 
         # Analisando opacidade das setas diagonais e verticais
+        if vertical_momentum not in permitted_vm:
+            upper_arrow_opacity = 100
         if upper_arrow_opacity == 100 and right_arrow_opacity == 100:
             up_right_arrow_opacity = 100
         elif upper_arrow_opacity == 100 and left_arrow_opacity == 100:
@@ -242,7 +270,50 @@ def game_loop():
                 game_exit = True
             if event.type == pg.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    exit()
+                    if player_flip:
+                        image_offset = -3
+                    else:
+                        image_offset = 2
+                    shoot = True
+            if event.type == pg.MOUSEBUTTONUP:
+                if event.button == 1:
+                    image_offset = 0
+                    shoot = False
+
+        time_to_recharge -= dt  # Tempo para conseguir atirar
+        # Balas
+        if shoot and time_to_recharge < 0:
+            player_movement[0] = 100
+            time_to_shoot += dt
+            if len(bullets) == 0:
+                initial_bullet = 0
+            else:
+                initial_bullet = 0.2
+            while n_of_bullets <= 30 and time_to_shoot > initial_bullet:
+                bullets.append([player_rect.x, player_rect.y])
+                shoot_pos.append([player_flip])
+                time_to_shoot = 0
+                n_of_bullets += 1
+                if n_of_bullets > 30:
+                    time_to_recharge = 2
+                    n_of_bullets = 0
+                    shoot = False
+        for bullet in bullets:
+            pos = bullets.index(bullet)
+            if not shoot_pos[pos][0]:
+                bullet[0] += 15
+                x_start_shoot = 10
+                angle = 0
+            else:
+                bullet[0] -= 15
+                x_start_shoot = 0
+                angle = 180
+            display.blit(pg.transform.rotate(bullet_img, angle),
+                         (bullet[0] + x_start_shoot + scroll[0], bullet[1] + 14 + scroll[1]))
+            if bullet[0] > player_rect.x + 300 + arrow.get_width() or \
+                    bullet[0] < player_rect.x - 300 - arrow.get_width():
+                bullets.remove(bullet)
+                shoot_pos.remove(shoot_pos[pos])
 
         # Morte do personagem
         if air_timer > 120:
