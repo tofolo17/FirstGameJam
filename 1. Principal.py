@@ -35,7 +35,8 @@ animation_database = {'idle': load_animation('Player Animations/idle', [7, 7, 7,
                       'jump': load_animation('Player Animations/jump', [7, 7, 7, 7, 7, 7, 7]),
                       'shoot': load_animation('Player Animations/shoot', [3, 3, 3, 3]),
                       'walkshoot': load_animation('Player Animations/walkshoot', [4, 4, 4, 4, 4, 4, 4, 4]),
-                      'jumpshoot': load_animation('Player Animations/jumpshoot', [3, 3, 3, 3])}
+                      'jumpshoot': load_animation('Player Animations/jumpshoot', [3, 3, 3, 3]),
+                      'superjump': load_animation('Player Animations/superjump,', [7, 7, 7, 7, 7])}
 
 
 # Loop principal
@@ -68,7 +69,7 @@ def game_loop():
     player_rect = pg.Rect(100, 100, 25, 30)
     player_frame = image_offset = 0
     player_action = 'idle'
-    player_flip = False
+    player_flip = flying = False
 
     # Objetos do fundo
     x_building1 = x_building2 = x_building3 = 0
@@ -170,7 +171,10 @@ def game_loop():
                 else:
                     player_action, player_frame = change_action(player_action, player_frame, 'jumpshoot')
             elif air_timer > 5:
-                player_action, player_frame = change_action(player_action, player_frame, 'jump')
+                if not flying:
+                    player_action, player_frame = change_action(player_action, player_frame, 'jump')
+                else:
+                    player_action, player_frame = change_action(player_action, player_frame, 'superjump')
             else:
                 player_action, player_frame = change_action(player_action, player_frame, 'run')
         else:
@@ -180,6 +184,7 @@ def game_loop():
                 else:
                     player_action, player_frame = change_action(player_action, player_frame, 'jumpshoot')
             elif air_timer > 5:
+
                 player_action, player_frame = change_action(player_action, player_frame, 'jump')
             else:
                 player_action, player_frame = change_action(player_action, player_frame, 'idle')
@@ -191,6 +196,7 @@ def game_loop():
 
         # Mantém o personagem colidindo com o chão
         if collisions['bottom']:
+            flying = False
             air_timer = vertical_momentum = 0
         else:
             air_timer += 1
@@ -243,6 +249,7 @@ def game_loop():
                 super_arrow_opacity = 150
                 player_rect.x += choice([-1.25, 1, -0.5, 0, 0.5, 1, 1.25])
             if charge_timer > 1:
+                flying = True
                 vertical_momentum = -12
                 charge_timer = time_to_use = 0
         else:
