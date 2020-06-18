@@ -210,7 +210,7 @@ def game_loop():
         player_img_id = animation_database[player_action][player_frame]
         player_img = animation_frames[player_img_id]
         display.blit(pg.transform.flip(player_img, player_flip, False),
-                     (player_rect.x - player_img.get_width()/2 + scroll[0] + image_offset, player_rect.y + scroll[1]))
+                     (player_rect.x + scroll[0] + image_offset, player_rect.y + scroll[1]))
 
         # Colocando as setas na tela
         rocket_arrow = pg.image.load(f'Imagens/superarrow_{img_arrow_n}.png').convert_alpha()
@@ -284,9 +284,7 @@ def game_loop():
             if event.type == pg.MOUSEBUTTONDOWN:
                 if event.button == 1 and time_to_recharge < 0:
                     if player_flip:
-                        image_offset = -3
-                    else:
-                        image_offset = 2
+                        image_offset = -5
                     shoot = True
             if event.type == pg.MOUSEBUTTONUP:
                 if event.button == 1:
@@ -314,14 +312,14 @@ def game_loop():
             pos = bullets.index(bullet)
             if not shoot_pos[pos][0]:
                 bullet[0] += 15
-                x_start_shoot = 0
+                x_start_shoot = 10
                 angle = 0
             else:
                 bullet[0] -= 15
-                x_start_shoot = -5
+                x_start_shoot = 0
                 angle = 180
             display.blit(pg.transform.rotate(bullet_img, angle),
-                         (bullet[0] + x_start_shoot + scroll[0], bullet[1] + 14 + scroll[1]))
+                         (bullet[0] + x_start_shoot + scroll[0], bullet[1] + 15 + scroll[1]))
             if bullet[0] > player_rect.x + 300 + arrow.get_width() or \
                     bullet[0] < player_rect.x - 300 - arrow.get_width():
                 bullets.remove(bullet)
