@@ -10,7 +10,7 @@ os.environ['SDL_VIDEO_CENTERED'] = '1'  # Centralizando
 pg.init()  # Inicializando o Pygame
 
 # Tamanho da tela e título
-win_size = [pg.display.Info().current_w - 5, pg.display.Info().current_h - 40]
+win_size = [900, 600]
 screen = pg.display.set_mode(size=win_size)
 pg.display.set_caption('Rocket Wave')
 display = pg.Surface((600, 400))
@@ -52,7 +52,7 @@ def game_loop():
     bullet_img = pg.image.load('Imagens/bullet.png')
 
     # Variáveis físicas
-    vertical_momentum = air_timer = speed_timer = charge_timer = dt = 0
+    vertical_momentum = air_timer = speed_timer = charge_timer = turbo_timer = dt = 0
     permitted_vm = [0, 0.3, 0.6, 0.8999999999999999, 1.2, 1.5]
     stars_speed = 0.3
     time_to_use = 8
@@ -171,7 +171,7 @@ def game_loop():
                 else:
                     player_action, player_frame = change_action(player_action, player_frame, 'jumpshoot')
             elif air_timer > 5:
-                if not flying:
+                if turbo_timer > 0.5 or turbo_timer == 0:
                     player_action, player_frame = change_action(player_action, player_frame, 'jump')
                 else:
                     player_action, player_frame = change_action(player_action, player_frame, 'superjump')
@@ -184,7 +184,7 @@ def game_loop():
                 else:
                     player_action, player_frame = change_action(player_action, player_frame, 'jumpshoot')
             elif air_timer > 5:
-                if not flying:
+                if turbo_timer > 0.5 or turbo_timer == 0:
                     player_action, player_frame = change_action(player_action, player_frame, 'jump')
                 else:
                     player_action, player_frame = change_action(player_action, player_frame, 'superjump')
@@ -198,8 +198,8 @@ def game_loop():
 
         # Mantém o personagem colidindo com o chão
         if collisions['bottom']:
-            flying = False
             air_timer = vertical_momentum = 0
+            flying = False
         else:
             air_timer += 1
 
@@ -256,6 +256,10 @@ def game_loop():
                 charge_timer = time_to_use = 0
         else:
             charge_timer = 0
+        if flying:
+            turbo_timer += dt
+        else:
+            turbo_timer = 0
 
         # Analisando opacidade das setas diagonais e verticais
         if vertical_momentum not in permitted_vm:
