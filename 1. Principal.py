@@ -4,6 +4,7 @@ from random import randint, choice
 from function import *
 
 import pygame as pg
+from pygame import mixer
 
 os.environ['SDL_VIDEO_CENTERED'] = '1'  # Centralizando
 
@@ -45,6 +46,12 @@ def game_loop():
     # Variáveis do loop
     game_exit = moving_left = moving_right = False
     true_scroll = [0, 0]
+
+    # Variáveis sonoras
+    mixer.music.load('Musics/bgmusic.mp3')
+    mixer.music.play(-1, 0, 5000)
+    mixer.music.set_volume(0.05)
+    footstep_sound = mixer.Sound('Musics/footsteps.mp3')
 
     # Variáveis da trocação
     shoot = False
@@ -166,6 +173,7 @@ def game_loop():
 
         # Animações baseadas no movimento
         if moving_left or moving_right:
+            #  footstep_sound.play(-1)
             if shoot and time_to_recharge < 0:
                 if air_timer <= 5:
                     player_action, player_frame = change_action(player_action, player_frame, 'walkshoot')
@@ -182,6 +190,7 @@ def game_loop():
             else:
                 player_action, player_frame = change_action(player_action, player_frame, 'run')
         else:
+            #  footstep_sound.stop()
             if shoot and time_to_recharge < 0:
                 if air_timer <= 5:
                     player_action, player_frame = change_action(player_action, player_frame, 'shoot')
