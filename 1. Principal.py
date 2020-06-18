@@ -36,7 +36,8 @@ animation_database = {'idle': load_animation('Player Animations/idle', [7, 7, 7,
                       'shoot': load_animation('Player Animations/shoot', [4, 4, 4, 4]),
                       'walkshoot': load_animation('Player Animations/walkshoot', [4, 4, 4, 4, 4, 4, 4, 4]),
                       'jumpshoot': load_animation('Player Animations/jumpshoot', [4, 4, 4, 4]),
-                      'superjump': load_animation('Player Animations/superjump', [7, 7, 7, 7])}
+                      'superjump': load_animation('Player Animations/superjump', [7, 7, 7, 7]),
+                      'superjumpshoot': load_animation('Player Animations/superjumpshoot', [4, 4, 4, 4])}
 
 
 # Loop principal
@@ -169,9 +170,12 @@ def game_loop():
                 if air_timer <= 5:
                     player_action, player_frame = change_action(player_action, player_frame, 'walkshoot')
                 else:
-                    player_action, player_frame = change_action(player_action, player_frame, 'jumpshoot')
+                    if not flying or turbo_timer > 0.75 or turbo_timer == 0:
+                        player_action, player_frame = change_action(player_action, player_frame, 'jumpshoot')
+                    else:
+                        player_action, player_frame = change_action(player_action, player_frame, 'superjumpshoot')
             elif air_timer > 5:
-                if turbo_timer > 0.5 or turbo_timer == 0:
+                if turbo_timer > 0.75 or turbo_timer == 0:
                     player_action, player_frame = change_action(player_action, player_frame, 'jump')
                 else:
                     player_action, player_frame = change_action(player_action, player_frame, 'superjump')
@@ -182,9 +186,12 @@ def game_loop():
                 if air_timer <= 5:
                     player_action, player_frame = change_action(player_action, player_frame, 'shoot')
                 else:
-                    player_action, player_frame = change_action(player_action, player_frame, 'jumpshoot')
+                    if not flying or turbo_timer > 0.75 or turbo_timer == 0:
+                        player_action, player_frame = change_action(player_action, player_frame, 'jumpshoot')
+                    else:
+                        player_action, player_frame = change_action(player_action, player_frame, 'superjumpshoot')
             elif air_timer > 5:
-                if turbo_timer > 0.5 or turbo_timer == 0:
+                if turbo_timer > 0.75 or turbo_timer == 0:
                     player_action, player_frame = change_action(player_action, player_frame, 'jump')
                 else:
                     player_action, player_frame = change_action(player_action, player_frame, 'superjump')
