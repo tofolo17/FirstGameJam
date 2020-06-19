@@ -314,7 +314,7 @@ def game_loop():
             if no_repeat_signal < 2:
                 if second_plus_rocket_use:
                     rocket_ready.play()
-                    rocket_ready.set_volume(0.01)
+                    rocket_ready.set_volume(0.05)
                 no_repeat_signal += 1
             time_to_use = 8
             img_arrow_n = 5
