@@ -56,7 +56,9 @@ def game_loop():
     jump_sound = mixer.Sound('Musics/jump.mp3')
     rocket_jump_sound = mixer.Sound('Musics/rocket_jump.mp3')
     rocket_charger_sound = mixer.Sound('Musics/rocket_charger.mp3')
-    replay_jump_sound = replay_super_jump_sound = charge_sound = False
+    rocket_ready = mixer.Sound('Musics/ready_rocket.mp3')
+    replay_jump_sound = replay_super_jump_sound = charge_sound = second_plus_rocket_use = False
+    no_repeat_signal = 1
 
     # Variáveis da trocação
     shoot = False
@@ -282,9 +284,9 @@ def game_loop():
                 player_rect.x += choice([-1.25, 1, -0.5, 0, 0.5, 1, 1.25])
             if charge_timer > 1:
                 rocket_charger_sound.stop()
-                super_jump_mode = replay_super_jump_sound = True
+                super_jump_mode = replay_super_jump_sound = second_plus_rocket_use = True
                 vertical_momentum = -12
-                charge_timer = time_to_use = 0
+                charge_timer = time_to_use = no_repeat_signal = 0
         else:
             charge_sound = True
             rocket_charger_sound.stop()
@@ -309,6 +311,11 @@ def game_loop():
         else:
             up_left_arrow_opacity = 70
         if time_to_use >= 8:
+            if no_repeat_signal < 2:
+                if second_plus_rocket_use:
+                    rocket_ready.play()
+                    rocket_ready.set_volume(0.01)
+                no_repeat_signal += 1
             time_to_use = 8
             img_arrow_n = 5
         else:
