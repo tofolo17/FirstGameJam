@@ -11,7 +11,7 @@ os.environ['SDL_VIDEO_CENTERED'] = '1'  # Centralizando
 pg.init()  # Inicializando o Pygame
 
 # Tamanho da tela e título
-win_size = [pg.display.Info().current_w - 5, pg.display.Info().current_h - 40]  # pg.display.Info().current_w - 5, pg.display.Info().current_h - 40
+win_size = [900, 600]  # pg.display.Info().current_w - 5, pg.display.Info().current_h - 40
 screen = pg.display.set_mode(size=win_size)
 pg.display.set_caption('Rocket Wave')
 display = pg.Surface((600, 400))
