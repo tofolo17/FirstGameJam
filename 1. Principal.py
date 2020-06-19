@@ -11,7 +11,7 @@ os.environ['SDL_VIDEO_CENTERED'] = '1'  # Centralizando
 pg.init()  # Inicializando o Pygame
 
 # Tamanho da tela e título
-win_size = [900, 600]  # pg.display.Info().current_w - 5, pg.display.Info().current_h - 40
+win_size = [pg.display.Info().current_w - 5, pg.display.Info().current_h - 40]  # pg.display.Info().current_w - 5, pg.display.Info().current_h - 40
 screen = pg.display.set_mode(size=win_size)
 pg.display.set_caption('Rocket Wave')
 display = pg.Surface((600, 400))
@@ -31,14 +31,14 @@ chimney = pg.image.load('Imagens/block_9.png')
 antenna = pg.image.load('Imagens/block_10.png')
 
 # Dicionário que guarda as informações sobre as animações
-animation_database = {'idle': load_animation('Player Animations/idle', [7, 7, 7, 7]),
+animation_database = {'idle': load_animation('Player Animations/idle', [5, 5, 5, 5]),
                       'run': load_animation('Player Animations/run', [5, 5, 5, 5, 5, 5, 5, 5]),
-                      'jump': load_animation('Player Animations/jump', [7, 7]),
-                      'shoot': load_animation('Player Animations/shoot', [4, 4, 4, 4]),
-                      'walkshoot': load_animation('Player Animations/walkshoot', [4, 4, 4, 4, 4, 4, 4, 4]),
-                      'jumpshoot': load_animation('Player Animations/jumpshoot', [4, 4, 4, 4]),
-                      'superjump': load_animation('Player Animations/superjump', [7, 7, 7, 7]),
-                      'superjumpshoot': load_animation('Player Animations/superjumpshoot', [4, 4, 4, 4])}
+                      'jump': load_animation('Player Animations/jump', [5, 5]),
+                      'shoot': load_animation('Player Animations/shoot', [5, 5, 5, 5]),
+                      'walkshoot': load_animation('Player Animations/walkshoot', [5, 5, 5, 5, 5, 5, 5, 5]),
+                      'jumpshoot': load_animation('Player Animations/jumpshoot', [5, 5, 5, 5]),
+                      'superjump': load_animation('Player Animations/superjump', [5, 5, 5, 5]),
+                      'superjumpshoot': load_animation('Player Animations/superjumpshoot', [5, 5, 5, 5])}
 
 
 # Loop principal
@@ -57,8 +57,8 @@ def game_loop():
     rocket_jump_sound = mixer.Sound('Musics/rocket_jump.mp3')
     rocket_charger_sound = mixer.Sound('Musics/rocket_charger.mp3')
     rocket_ready = mixer.Sound('Musics/ready_rocket.mp3')
-    replay_jump_sound = replay_super_jump_sound = charge_sound = second_plus_rocket_use = False
-    no_repeat_signal = 1
+    replay_jump_sound = replay_super_jump_sound = replay_charger_sound = second_plus_rocket_use = False
+    ready_rocket_sound_delimiter = 1
 
     # Variáveis da trocação
     shoot = False
@@ -178,16 +178,11 @@ def game_loop():
         if vertical_momentum > 7:
             vertical_momentum = 7
 
-        # Animações baseadas no movimento
+        # Animações baseadas no movimento - Pode ser otimizado
         if moving_left or moving_right:
             if shoot and time_to_recharge < 0:
                 if air_timer <= 5:
                     player_action, player_frame = change_action(player_action, player_frame, 'walkshoot')
-                else:
-                    if not super_jump_mode or turbo_timer > 0.75 or turbo_timer == 0:
-                        player_action, player_frame = change_action(player_action, player_frame, 'jumpshoot')
-                    else:
-                        player_action, player_frame = change_action(player_action, player_frame, 'superjumpshoot')
             elif air_timer > 5:
                 if turbo_timer > 0.75 or turbo_timer == 0:
                     player_action, player_frame = change_action(player_action, player_frame, 'jump')
@@ -199,11 +194,6 @@ def game_loop():
             if shoot and time_to_recharge < 0:
                 if air_timer <= 5:
                     player_action, player_frame = change_action(player_action, player_frame, 'shoot')
-                else:
-                    if not super_jump_mode or turbo_timer > 0.75 or turbo_timer == 0:
-                        player_action, player_frame = change_action(player_action, player_frame, 'jumpshoot')
-                    else:
-                        player_action, player_frame = change_action(player_action, player_frame, 'superjumpshoot')
             elif air_timer > 5:
                 if turbo_timer > 0.75 or turbo_timer == 0:
                     player_action, player_frame = change_action(player_action, player_frame, 'jump')
@@ -211,6 +201,12 @@ def game_loop():
                     player_action, player_frame = change_action(player_action, player_frame, 'superjump')
             else:
                 player_action, player_frame = change_action(player_action, player_frame, 'idle')
+        if shoot and time_to_recharge < 0:
+            if air_timer > 5:
+                if not super_jump_mode or turbo_timer > 0.75 or turbo_timer == 0:
+                    player_action, player_frame = change_action(player_action, player_frame, 'jumpshoot')
+                else:
+                    player_action, player_frame = change_action(player_action, player_frame, 'superjumpshoot')
 
         player_rect, collisions = move(player_rect, player_movement, tile_rect)  # Relacionando o jogador e o mapa
 
@@ -276,19 +272,19 @@ def game_loop():
         if y > 4 * win_size[1] / 5:
             charge_timer += dt
             if vertical_momentum in permitted_vm and time_to_use >= 8:
-                if charge_sound:
+                if replay_charger_sound:
                     rocket_charger_sound.play()
-                    rocket_charger_sound.set_volume(0.01)
-                    charge_sound = False
-                super_arrow_opacity = 150
+                    rocket_charger_sound.set_volume(0.05)
+                    replay_charger_sound = False
+                super_arrow_opacity = 125
                 player_rect.x += choice([-1.25, 1, -0.5, 0, 0.5, 1, 1.25])
             if charge_timer > 1:
                 rocket_charger_sound.stop()
                 super_jump_mode = replay_super_jump_sound = second_plus_rocket_use = True
                 vertical_momentum = -12
-                charge_timer = time_to_use = no_repeat_signal = 0
+                charge_timer = time_to_use = ready_rocket_sound_delimiter = 0
         else:
-            charge_sound = True
+            replay_charger_sound = True
             rocket_charger_sound.stop()
             charge_timer = 0
         if replay_super_jump_sound:
@@ -311,11 +307,11 @@ def game_loop():
         else:
             up_left_arrow_opacity = 70
         if time_to_use >= 8:
-            if no_repeat_signal < 2:
+            if ready_rocket_sound_delimiter < 2:
                 if second_plus_rocket_use:
                     rocket_ready.play()
                     rocket_ready.set_volume(0.05)
-                no_repeat_signal += 1
+                ready_rocket_sound_delimiter += 1
             time_to_use = 8
             img_arrow_n = 5
         else:
@@ -344,8 +340,8 @@ def game_loop():
             if len(bullets) == 0:
                 initial_bullet = 0
             else:
-                initial_bullet = 0.1
-            while time_to_shoot > initial_bullet:  # n_of_bullets <= 15 and
+                initial_bullet = 0.15
+            while time_to_shoot > initial_bullet:
                 laser_sound.play()
                 laser_sound.set_volume(0.05)
                 laser_sound.fadeout(1000)
