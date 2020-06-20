@@ -59,8 +59,12 @@ def game_loop():
     rocket_jump_sound = mixer.Sound('Musics/rocket_jump.mp3')
     rocket_charger_sound = mixer.Sound('Musics/rocket_charger.mp3')
     rocket_ready = mixer.Sound('Musics/ready_rocket.mp3')
+    landing_sound = mixer.Sound('Musics/landing.mp3')
+
+    # Delimitadores sonoros
     replay_jump_sound = replay_super_jump_sound = replay_charger_sound = second_plus_rocket_use = False
     ready_rocket_sound_delimiter = footstep_sound_delimiter = running_sound_limiter = 1
+    landing_sound_delimiter = 0
 
     # Variáveis da trocação
     shoot = False
@@ -320,6 +324,12 @@ def game_loop():
         # Analisando opacidade das setas diagonais e verticais
         if vertical_momentum not in permitted_vm:
             upper_arrow_opacity = 100
+            landing_sound_delimiter = 1
+        else:
+            if 0 < landing_sound_delimiter < 2:
+                landing_sound.play()
+                landing_sound.set_volume(0.05)
+                landing_sound_delimiter += 1
         if upper_arrow_opacity == 100 and right_arrow_opacity == 100:
             up_right_arrow_opacity = 100
         elif upper_arrow_opacity == 100 and left_arrow_opacity == 100:
