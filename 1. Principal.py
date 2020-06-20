@@ -73,7 +73,7 @@ def game_loop():
     bullet_img = pg.image.load('Imagens/bullet.png')
 
     # Variáveis físicas
-    vertical_momentum = air_timer = speed_timer = charge_timer = turbo_timer = dt = 0
+    vertical_momentum = air_timer = speed_timer = charge_timer = turbo_timer = dt = jump_timer = 0
     permitted_vm = [0, 0.3, 0.6, 0.8999999999999999, 1.2, 1.5]
     stars_speed = 0.3
     time_to_use = 8
@@ -277,6 +277,7 @@ def game_loop():
             right_arrow_opacity = left_arrow_opacity = upper_arrow_opacity = up_right_arrow_opacity = \
                 up_left_arrow_opacity = super_arrow_opacity = 70
 
+        jump_timer += dt
         # Movimentos em Y
         if (y < win_size[1] / 3) and (y > win_size[1] / 6) and air_timer < 8:
             if replay_jump_sound:
@@ -285,8 +286,9 @@ def game_loop():
                 replay_jump_sound = False
             if collisions['top']:
                 vertical_momentum = -1
-            elif collisions['bottom']:
+            elif collisions['bottom'] and jump_timer > 1.2:
                 vertical_momentum = -6
+                jump_timer = 0
                 collisions['top'] = True
                 replay_jump_sound = True
         elif collisions['bottom']:
