@@ -51,6 +51,7 @@ def game_loop():
     mixer.music.load('Musics/bgmusic.mp3')
     mixer.music.play(-1, 0, 5000)
     mixer.music.set_volume(0.05)
+    footstep_sound = mixer.Sound('Musics/footsteps.mp3')
     laser_sound = mixer.Sound('Musics/laser.mp3')
     reload_sound = mixer.Sound('Musics/reload.mp3')
     jump_sound = mixer.Sound('Musics/jump.mp3')
@@ -58,7 +59,7 @@ def game_loop():
     rocket_charger_sound = mixer.Sound('Musics/rocket_charger.mp3')
     rocket_ready = mixer.Sound('Musics/ready_rocket.mp3')
     replay_jump_sound = replay_super_jump_sound = replay_charger_sound = second_plus_rocket_use = False
-    ready_rocket_sound_delimiter = 1
+    ready_rocket_sound_delimiter = footstep_sound_delimiter = 1
 
     # Variáveis da trocação
     shoot = False
@@ -178,8 +179,15 @@ def game_loop():
         if vertical_momentum > 7:
             vertical_momentum = 7
 
+        print(footstep_sound_delimiter)
+
         # Animações baseadas no movimento - Pode ser otimizado
         if moving_left or moving_right:
+            if footstep_sound_delimiter < 2:
+                footstep_sound.play()
+                footstep_sound_delimiter += 1
+            elif vertical_momentum not in permitted_vm:
+                footstep_sound.stop()
             if shoot and time_to_recharge < 0:
                 if air_timer <= 5:
                     player_action, player_frame = change_action(player_action, player_frame, 'walkshoot')
@@ -191,6 +199,8 @@ def game_loop():
             else:
                 player_action, player_frame = change_action(player_action, player_frame, 'run')
         else:
+            footstep_sound_delimiter = 1
+            footstep_sound.stop()
             if shoot and time_to_recharge < 0:
                 if air_timer <= 5:
                     player_action, player_frame = change_action(player_action, player_frame, 'shoot')
