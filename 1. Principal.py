@@ -150,7 +150,7 @@ def game_loop():
                 displaying_tile(half_support_left, 16, 16, 7, 0, 0)
                 displaying_tile(glass, 16, 16, 8, 0, 0)
                 displaying_tile(chimney, 10, 10, 9, 0, 7, True)
-                displaying_tile(antenna, 84, 96, 10, 0, -76, True)
+                displaying_tile(antenna, 84, 96, 'a', 0, -76, True)
                 x += 1
             y += 1
 
