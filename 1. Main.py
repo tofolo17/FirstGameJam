@@ -6,31 +6,31 @@ from function import *
 import pygame as pg
 from pygame import mixer
 
-os.environ['SDL_VIDEO_CENTERED'] = '1'  # Centralizando
+os.environ['SDL_VIDEO_CENTERED'] = '1'  # Centering
 
-pg.init()  # Inicializando o Pygame
+pg.init()  # Starting Pygame
 
-# Tamanho da tela e título
+# Size of the screen and title
 win_size = [900, 600]  # pg.display.Info().current_w - 5, pg.display.Info().current_h - 40
 screen = pg.display.set_mode(size=win_size)
 pg.display.set_caption('Rocket Wave')
 display = pg.Surface((600, 400))
 clock = pg.time.Clock()
 
-# Variáveis do mapa
+# Map variables
 level_map = load_map('mapfile')
-full_block = pg.image.load('Imagens/block_1.png')
-half_block = pg.image.load('Imagens/block_2.png')
-half_block_vertical = pg.image.load('Imagens/block_3.png')
-half_block_right = pg.image.load('Imagens/block_4.png')
-half_block_left = pg.image.load('Imagens/block_5.png')
-half_support_right = pg.image.load('Imagens/block_6.png')
-half_support_left = pg.image.load('Imagens/block_7.png')
-glass = pg.image.load('Imagens/block_8.png')
-chimney = pg.image.load('Imagens/block_9.png')
-antenna = pg.image.load('Imagens/block_10.png')
+full_block = pg.image.load('Images/block_1.png')
+half_block = pg.image.load('Images/block_2.png')
+half_block_vertical = pg.image.load('Images/block_3.png')
+half_block_right = pg.image.load('Images/block_4.png')
+half_block_left = pg.image.load('Images/block_5.png')
+half_support_right = pg.image.load('Images/block_6.png')
+half_support_left = pg.image.load('Images/block_7.png')
+glass = pg.image.load('Images/block_8.png')
+chimney = pg.image.load('Images/block_9.png')
+antenna = pg.image.load('Images/block_10.png')
 
-# Dicionário que guarda as informações sobre as animações
+# Dictionary that stores information about animations
 animation_database = {'idle': load_animation('Player Animations/idle', [5, 5, 5, 5]),
                       'run': load_animation('Player Animations/run', [5, 5, 5, 5, 5, 5, 5, 5]),
                       'jump': load_animation('Player Animations/jump', [5, 5]),
@@ -41,13 +41,13 @@ animation_database = {'idle': load_animation('Player Animations/idle', [5, 5, 5,
                       'superjumpshoot': load_animation('Player Animations/superjumpshoot', [5, 5, 5, 5])}
 
 
-# Loop principal
+# Main loop
 def game_loop():
-    # Variáveis do loop
+    # Loop variables
     game_exit = moving_left = moving_right = False
     true_scroll = [0, 0]
 
-    # Variáveis sonoras
+    # Sound variables
     mixer.music.load('Musics/bgmusic.mp3')
     mixer.music.play(-1, 0, 5000)
     mixer.music.set_volume(0.05)
@@ -61,73 +61,73 @@ def game_loop():
     rocket_ready = mixer.Sound('Musics/ready_rocket.mp3')
     landing_sound = mixer.Sound('Musics/landing.mp3')
 
-    # Delimitadores sonoros
+    # Sound delimiters - Can be improved
     replay_jump_sound = replay_super_jump_sound = replay_charger_sound = second_plus_rocket_use = False
     ready_rocket_sound_delimiter = footstep_sound_delimiter = running_sound_limiter = 1
     landing_sound_delimiter = 0
 
-    # Variáveis da trocação
+    # Shooting variables
     shoot = False
     bullets, shoot_pos = [], []
     n_of_bullets = time_to_shoot = time_to_recharge = 0
-    bullet_img = pg.image.load('Imagens/bullet.png')
+    bullet_img = pg.image.load('Images/bullet.png')
 
-    # Variáveis físicas
+    # Physics
     vertical_momentum = air_timer = speed_timer = charge_timer = turbo_timer = dt = jump_timer = 0
     permitted_vm = [0, 0.3, 0.6, 0.8999999999999999, 1.2, 1.5]
     stars_speed = 0.3
     time_to_use = 8
 
-    # Variáveis da opacidade
+    # Opacity variables
     right_arrow_opacity = left_arrow_opacity = upper_arrow_opacity = up_right_arrow_opacity = up_left_arrow_opacity \
         = super_arrow_opacity = 70
 
-    # Variáveis das setas
-    arrow = pg.image.load('Imagens//seta.png').convert_alpha()
+    # Arrow variables
+    arrow = pg.image.load('Images//seta.png').convert_alpha()
     img_arrow_n = 5
 
-    # Variáveis do personagem
+    # Character variables
     player_rect = pg.Rect(100, 100, 25, 30)
     player_frame = image_offset = 0
     player_action = 'idle'
     player_flip = super_jump_mode = False
 
-    # Objetos do fundo
+    # Background layers
     x_building1 = x_building2 = x_building3 = 0
-    background = pg.image.load('Imagens/bg.png')
-    buildings1 = pg.image.load('Imagens/layer1.png')
-    buildings2 = pg.image.load('Imagens/layer2.png')
-    buildings3 = pg.image.load('Imagens/layer3.png')
+    background = pg.image.load('Images/bg.png')
+    buildings1 = pg.image.load('Images/layer1.png')
+    buildings2 = pg.image.load('Images/layer2.png')
+    buildings3 = pg.image.load('Images/layer3.png')
     stars = []
     for n in range(45):
         stars.append([randint(0, 600), randint(0, 140)])
 
-    # Convertendo elementos da matriz em blocos
+    # Converting numbers of mapfile to blocks
     def displaying_tile(block_name, w, h, n_block, corrector_x, corrector_y, collide=0):
         if tile == f'{n_block}':
             display.blit(block_name, (x * 16 + scroll[0] - corrector_x, y * 16 + scroll[1] + corrector_y))
             if not collide:
                 tile_rect.append(pg.Rect(x * 16, y * 16, w, h))
 
-    # Enquanto o jogo estiver aberto...
+    # While the game is open...
     while not game_exit:
 
-        display.fill((0, 0, 0))  # Preenchendo a tela com algo
-        display.blit(background, (0, 0))  # Fundo gradiente
+        display.fill((0, 0, 0))  # Filling the screen with something
+        display.blit(background, (0, 0))  # Gradient background
 
-        # Câmera
+        # Camera
         true_scroll[0] -= ((player_rect.x + true_scroll[0]) - 230) / 12
         true_scroll[1] -= ((player_rect.y + true_scroll[1]) - 250) / 12
         scroll = true_scroll.copy()
         scroll[0] = int(true_scroll[0])
         scroll[1] = int(true_scroll[1])
 
-        # Movimentação das construções
+        # Movement of buildings
         bg_moving(x_building3, buildings3, 140 + scroll[1] / 8, display, win_size[0])
         bg_moving(x_building2, buildings2, 140 + scroll[1] / 6, display, win_size[0])
         bg_moving(x_building1, buildings1, 165 + scroll[1] / 4, display, win_size[0])
 
-        # Adiciona as estrelas ao céu
+        # Adding stars
         for star in stars:
             pg.draw.line(display, (255, 255, 255), (star[0], star[1]), (star[0], star[1]))
             star[0] = star[0] - stars_speed
@@ -135,7 +135,7 @@ def game_loop():
                 star[0] = 600
                 star[1] = randint(0, 140)
 
-        # Construção do mapa
+        # Map construction
         tile_rect = []
         y = 0
         for layer in level_map:
@@ -154,7 +154,7 @@ def game_loop():
                 x += 1
             y += 1
 
-        # Movimento do personagem
+        # Character movement
         player_movement = [0, 0]
         if speed_timer > 0.8 and vertical_momentum in permitted_vm:
             speed_boost = 3
@@ -191,7 +191,7 @@ def game_loop():
         if vertical_momentum > 7:
             vertical_momentum = 7
 
-        # Animações baseadas no movimento - Pode ser otimizado
+        # Motion-based animations - Can be optimized
         if moving_left or moving_right:
             if footstep_sound_delimiter < 2 and vertical_momentum in permitted_vm:
                 if speed_boost == 2:
@@ -232,19 +232,19 @@ def game_loop():
                 else:
                     player_action, player_frame = change_action(player_action, player_frame, 'superjumpshoot')
 
-        player_rect, collisions = move(player_rect, player_movement, tile_rect)  # Relacionando o jogador e o mapa
+        player_rect, collisions = move(player_rect, player_movement, tile_rect)  # Relating the player and the map
 
-        # Não deixa a tela se mexer quando colidido com a parede
+        # Do not let the screen move when the player collides with the wall.
         un_bug_collided_bg(x_building1, x_building2, x_building3, collisions['right'], collisions['left'])
 
-        # Mantém o personagem colidindo com o chão
+        # Keeps the character colliding with the floor
         if collisions['bottom']:
             air_timer = vertical_momentum = 0
             super_jump_mode = False
         else:
             air_timer += 1
 
-        # Transição entre os frames armazenados
+        # Transition between the stored frames
         player_frame += 1
         if player_frame >= len(animation_database[player_action]):
             player_frame = 0
@@ -253,8 +253,8 @@ def game_loop():
         display.blit(pg.transform.flip(player_img, player_flip, False),
                      (player_rect.x + scroll[0] + image_offset, player_rect.y + scroll[1]))
 
-        # Colocando as setas na tela
-        rocket_arrow = pg.image.load(f'Imagens/superarrow_{img_arrow_n}.png').convert_alpha()
+        # Adding arrows
+        rocket_arrow = pg.image.load(f'Images/superarrow_{img_arrow_n}.png').convert_alpha()
         blit_arrow(50, 200, 180, left_arrow_opacity, arrow, display)
         blit_arrow(482, 70, 45, up_right_arrow_opacity, arrow, display)
         blit_arrow(50, 70, 135, up_left_arrow_opacity, arrow, display)
@@ -262,8 +262,8 @@ def game_loop():
         blit_arrow(492, 200, 0, right_arrow_opacity, arrow, display)
         blit_arrow(279, 300, 90, super_arrow_opacity, rocket_arrow, display)
 
-        x, y = pg.mouse.get_pos()  # Pegando as coordenadas do mouse
-        # Movimentos em X
+        x, y = pg.mouse.get_pos()  # Getting mouse coordinates
+        # X movement
         if x > (2 / 3 * win_size[0]) and (y > win_size[1] / 6):
             moving_left = False
             moving_right = True
@@ -278,7 +278,7 @@ def game_loop():
                 up_left_arrow_opacity = super_arrow_opacity = 70
 
         jump_timer += dt
-        # Movimentos em Y
+        # Y movement
         if (y < win_size[1] / 3) and (y > win_size[1] / 6) and air_timer < 8:
             if replay_jump_sound:
                 jump_sound.play()
@@ -294,7 +294,7 @@ def game_loop():
         elif collisions['bottom']:
             upper_arrow_opacity = up_left_arrow_opacity = up_right_arrow_opacity = 70
 
-        # Super Pulo
+        # Super jump
         if y > 4 * win_size[1] / 5:
             charge_timer += dt
             if vertical_momentum in permitted_vm and time_to_use >= 8:
@@ -323,7 +323,7 @@ def game_loop():
         else:
             turbo_timer = 0
 
-        # Analisando opacidade das setas diagonais e verticais
+        # Analyzing the opacity of the arrows
         if vertical_momentum not in permitted_vm:
             upper_arrow_opacity = 100
             landing_sound_delimiter = 1
@@ -350,7 +350,7 @@ def game_loop():
             img_arrow_n = change_img_conditional(time_to_use, [0, 2, 4, 6, 8], 1)
             charge_timer = 0
 
-        # Apurando eventos
+        # Events
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 game_exit = True
@@ -364,8 +364,8 @@ def game_loop():
                     image_offset = 0
                     shoot = False
 
-        time_to_recharge -= dt  # Tempo para conseguir atirar
-        # Balas
+        time_to_recharge -= dt  # Time to shoot
+        # Bullets
         if shoot and time_to_recharge < 0:
             player_movement[0] = 100
             time_to_shoot += dt
@@ -404,11 +404,11 @@ def game_loop():
                 shoot_pos.remove(shoot_pos[pos])
         screen_text(f'{15 - n_of_bullets} / 15', 540, 370, (255, 255, 255), 20, display)
 
-        # Morte do personagem
+        # Character's death
         if air_timer > 120:
             game_exit = True
 
-        # Update da tela e FPS
+        # Screen and FPS update
         screen.blit(pg.transform.scale(display, win_size), (0, 0))
         pg.display.update()
         time_to_use += dt

@@ -18,16 +18,16 @@ clock = pg.time.Clock()
 
 # Variáveis do mapa
 level_map = load_map('mapfile')
-full_block = pg.image.load('Imagens/block_1.png')
-half_block = pg.image.load('Imagens/block_2.png')
-half_block_vertical = pg.image.load('Imagens/block_3.png')
-half_block_right = pg.image.load('Imagens/block_4.png')
-half_block_left = pg.image.load('Imagens/block_5.png')
-half_support_right = pg.image.load('Imagens/block_6.png')
-half_support_left = pg.image.load('Imagens/block_7.png')
-glass = pg.image.load('Imagens/block_8.png')
-chimney = pg.image.load('Imagens/block_9.png')
-antenna = pg.image.load('Imagens/block_10.png')
+full_block = pg.image.load('Images/block_1.png')
+half_block = pg.image.load('Images/block_2.png')
+half_block_vertical = pg.image.load('Images/block_3.png')
+half_block_right = pg.image.load('Images/block_4.png')
+half_block_left = pg.image.load('Images/block_5.png')
+half_support_right = pg.image.load('Images/block_6.png')
+half_support_left = pg.image.load('Images/block_7.png')
+glass = pg.image.load('Images/block_8.png')
+chimney = pg.image.load('Images/block_9.png')
+antenna = pg.image.load('Images/block_10.png')
 
 # Dicionário que guarda as informações sobre as animações
 animation_database = {'idle': load_animation('Player Animations/idle', [7, 7, 7, 7]),
@@ -48,7 +48,7 @@ def game_loop():
     shoot = False
     bullets, shoot_pos = [], []
     n_of_bullets = time_to_shoot = time_to_recharge = 0
-    bullet_img = pg.image.load('Imagens/bullet.png')
+    bullet_img = pg.image.load('Images/bullet.png')
 
     # Variáveis físicas
     vertical_momentum = air_timer = speed_timer = charge_timer = dt = 0
@@ -61,7 +61,7 @@ def game_loop():
         = super_arrow_opacity = 70
 
     # Variáveis das setas
-    arrow = pg.image.load('Imagens//seta.png').convert_alpha()
+    arrow = pg.image.load('Images//seta.png').convert_alpha()
     img_arrow_n = 5
 
     # Variáveis do personagem
@@ -72,10 +72,10 @@ def game_loop():
 
     # Objetos do fundo
     x_building1 = x_building2 = x_building3 = 0
-    background = pg.image.load('Imagens/bg.png')
-    buildings1 = pg.image.load('Imagens/layer1.png')
-    buildings2 = pg.image.load('Imagens/layer2.png')
-    buildings3 = pg.image.load('Imagens/layer3.png')
+    background = pg.image.load('Images/bg.png')
+    buildings1 = pg.image.load('Images/layer1.png')
+    buildings2 = pg.image.load('Images/layer2.png')
+    buildings3 = pg.image.load('Images/layer3.png')
     stars = []
     for n in range(45):
         stars.append([randint(0, 600), randint(0, 140)])
@@ -205,7 +205,7 @@ def game_loop():
                      (player_rect.x - player_img.get_width()/2 + scroll[0] + image_offset, player_rect.y + scroll[1]))
 
         # Colocando as setas na tela
-        rocket_arrow = pg.image.load(f'Imagens/superarrow_{img_arrow_n}.png').convert_alpha()
+        rocket_arrow = pg.image.load(f'Images/superarrow_{img_arrow_n}.png').convert_alpha()
         blit_arrow(50, 200, 180, left_arrow_opacity, arrow, display)
         blit_arrow(482, 70, 45, up_right_arrow_opacity, arrow, display)
         blit_arrow(50, 70, 135, up_left_arrow_opacity, arrow, display)
